@@ -1,0 +1,219 @@
+"use client";
+
+import { useState, memo } from "react";
+import { TableStatus } from "@/lib/enums";
+import { TableControls } from "./TableControls";
+import { Tile, Badge } from "@/ui";
+import type { TileVariant } from "@/ui";
+import type { WorkspaceParty } from "./WorkspaceServiceView";
+
+type Table = {
+  id: string;
+  status: string;
+  capacity: number;
+  baseCapacity?: number;
+  capacityOverride?: number;
+  lastSeatedAt: Date | null;
+  expectedFreeAt: Date | null;
+  currentPartyId?: string | null;
+  currentPartyName?: string | null;
+  number?: number;
+  tableNumber?: number;
+  label?: string;
+};
+
+type TableTileProps = {
+  table: Table | null;
+  tableNumber: number;
+  seats: number;
+  workspaceId?: string;
+  parties?: WorkspaceParty[];
+  /** Valid drop target during drag (capacity >= party size, FREE or TURNING) */
+  isDropTargetValid?: boolean;
+  /** Invalid drop target (too small or OCCUPIED) */
+  isDropTargetInvalid?: boolean;
+  /** In-flight action for this table: 'seat' | 'turn' | 'clear' | 'bump' */
+  inFlightTableNumber?: string;
+  markTableTurningFormAction: (formData: FormData) => Promise<void>;
+  clearTableFormAction: (formData: FormData) => Promise<void>;
+  bumpExpectedFreeAtFormAction: (formData: FormData) => Promise<void>;
+  markTableTurningAction?: (
+    workspaceId: string,
+    tableNumber: number,
+    turningMinutes?: number
+  ) => Promise<{ error?: string }>;
+  addMinutesToTableAction?: (
+    workspaceId: string,
+    tableNumber: number,
+    minutesToAdd?: number
+  ) => Promise<{ error?: string }>;
+  addChairAction?: (workspaceId: string, tableNumber: number) => Promise<{ error?: string }>;
+  removeChairAction?: (workspaceId: string, tableNumber: number) => Promise<{ error?: string }>;
+  onClearTable?: (tableNumber: number) => Promise<void>;
+  onMarkTurning?: (tableNumber: number, turningMinutes?: number) => Promise<void>;
+  onAddMinutes?: (tableNumber: number, minutesToAdd?: number) => Promise<void>;
+  showToast?: (message: string) => void;
+  onClearSuccess?: () => void;
+};
+
+function isOccupiedOverdue(table: Table): boolean {
+  const expectedFreeAt = table.expectedFreeAt;
+  if (expectedFreeAt == null) return false;
+  const expectedMs = expectedFreeAt instanceof Date ? expectedFreeAt.getTime() : new Date(expectedFreeAt).getTime();
+  return Date.now() >= expectedMs;
+}
+
+/** Map table state to Tile variant (design system). */
+function getTileVariant(table: Table | null): TileVariant {
+  if (!table) return "table-placeholder";
+  if (table.status === TableStatus.FREE) return "table-free";
+  if (table.status === TableStatus.TURNING) return "table-turning";
+  if (table.status === TableStatus.OCCUPIED && isOccupiedOverdue(table)) return "table-turning";
+  return "table-occupied";
+}
+
+function tableInputs(table: Table | null, workspaceId?: string) {
+  if (!table) return null;
+  if (workspaceId) {
+    return (
+      <>
+        <input type="hidden" name="workspaceTableStateId" value={table.id} />
+        <input type="hidden" name="workspaceId" value={workspaceId} />
+      </>
+    );
+  }
+  return <input type="hidden" name="tableId" value={table.id} />;
+}
+
+function TableTileInner({
+  table,
+  tableNumber,
+  seats,
+  workspaceId,
+  parties = [],
+  isDropTargetValid = false,
+  isDropTargetInvalid = false,
+  inFlightTableNumber,
+  markTableTurningFormAction,
+  clearTableFormAction,
+  bumpExpectedFreeAtFormAction,
+  markTableTurningAction,
+  addMinutesToTableAction,
+  onClearTable,
+  onMarkTurning,
+  onAddMinutes,
+  addChairAction,
+  removeChairAction,
+  showToast,
+  onClearSuccess
+}: TableTileProps) {
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.count(`TableTile render ${tableNumber}`);
+  }
+  const [showPanel, setShowPanel] = useState(false);
+  const isPlaceholder = !table;
+  const capacity = table
+    ? (table.baseCapacity ?? table.capacity) + (table.capacityOverride ?? 0)
+    : seats;
+  const seatedParty =
+    table?.currentPartyId != null
+      ? parties.find((p) => p.id === table.currentPartyId) ?? null
+      : null;
+
+  let dropRingClass = "";
+  if (isDropTargetValid) dropRingClass = "ring-2 ring-[var(--primary-action)] ring-offset-2 ring-offset-[var(--panel)]";
+  if (isDropTargetInvalid) dropRingClass = "opacity-60 ring-1 ring-[var(--border)]";
+
+  const statusBadgeVariant =
+    !table ? "muted" : table.status === TableStatus.FREE ? "free" : table.status === TableStatus.TURNING || isOccupiedOverdue(table) ? "turning" : "occupied";
+
+  return (
+    <>
+      <Tile
+        variant={getTileVariant(table)}
+        rounded="none"
+        padding="md"
+        className={`w-full text-xs ${dropRingClass}`}
+        onClick={() => table && setShowPanel(true)}
+        role={table ? "button" : undefined}
+        title={
+          isDropTargetInvalid
+            ? table?.status === TableStatus.OCCUPIED
+              ? "Occupied"
+              : "Too small"
+            : table && (table.status === TableStatus.OCCUPIED || table.status === TableStatus.TURNING)
+              ? "Click for details"
+              : undefined
+        }
+      >
+        <div className="flex shrink-0 items-center justify-between gap-1">
+          <span className="table-number text-[16px]">{tableNumber}</span>
+          <Badge variant="seats">{capacity}</Badge>
+        </div>
+        <div className="mt-1 flex shrink-0 flex-wrap items-center gap-1">
+          <Badge variant={statusBadgeVariant}>{!table ? "—" : table.status}</Badge>
+          {!isPlaceholder && table.status === TableStatus.FREE && (
+            <span className="meta-text text-[0.65rem]">Available</span>
+          )}
+        </div>
+      </Tile>
+
+      {table && workspaceId && showPanel && (
+        <TableControls
+          table={table}
+          tableNumber={tableNumber}
+          seats={seats}
+          workspaceId={workspaceId}
+          seatedParty={seatedParty}
+          onClose={() => setShowPanel(false)}
+          clearTableFormAction={clearTableFormAction}
+          markTableTurningFormAction={markTableTurningFormAction}
+          bumpExpectedFreeAtFormAction={bumpExpectedFreeAtFormAction}
+          markTableTurningAction={markTableTurningAction}
+          addMinutesToTableAction={addMinutesToTableAction}
+          onClearTable={onClearTable}
+          onMarkTurning={onMarkTurning}
+          onAddMinutes={onAddMinutes}
+          inFlightTableNumber={inFlightTableNumber}
+          addChairAction={addChairAction}
+          removeChairAction={removeChairAction}
+          showToast={showToast}
+          onClearSuccess={onClearSuccess}
+        />
+      )}
+    </>
+  );
+}
+
+function tableRefEqual(a: Table | null, b: Table | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+  const effA = (a.baseCapacity ?? a.capacity) + (a.capacityOverride ?? 0);
+  const effB = (b.baseCapacity ?? b.capacity) + (b.capacityOverride ?? 0);
+  const dateMs = (d: Date | null | undefined): number =>
+    d instanceof Date ? d.getTime() : d ? new Date(d as string).getTime() : 0;
+  return (
+    a.status === b.status &&
+    a.currentPartyId === b.currentPartyId &&
+    effA === effB &&
+    dateMs(a.expectedFreeAt) === dateMs(b.expectedFreeAt) &&
+    dateMs(a.lastSeatedAt) === dateMs(b.lastSeatedAt)
+  );
+}
+
+function tableTilePropsEqual(prev: TableTileProps, next: TableTileProps): boolean {
+  if (
+    prev.tableNumber !== next.tableNumber ||
+    prev.seats !== next.seats ||
+    prev.workspaceId !== next.workspaceId ||
+    prev.isDropTargetValid !== next.isDropTargetValid ||
+    prev.isDropTargetInvalid !== next.isDropTargetInvalid ||
+    prev.inFlightTableNumber !== next.inFlightTableNumber
+  )
+    return false;
+  if (prev.parties !== next.parties) return false;
+  return tableRefEqual(prev.table, next.table);
+}
+
+export const TableTile = memo(TableTileInner, tableTilePropsEqual);

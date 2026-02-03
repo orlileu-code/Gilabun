@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Party {
+  id             String          @id @default(cuid())
+  name           String
+  size           Int
+  phone          String?
+  notes          String?
+  /// Preference zone for this party (e.g. ANY, WINDOW, QUIET, BAR, OUTSIDE)
+  preference     String          @default("ANY")
+  /// WAITING, SEATED, CANCELED, NO_SHOW
+  status         String          @default("WAITING")
+  quotedWaitMin  Int
+  createdAt      DateTime        @default(now())
+  seatedAt       DateTime?
+
+  /// When set, this party belongs to a workspace (waitlist for that session).
+  workspaceId    String?
+  workspace      Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  seatings       Seating[]
+}
+
+model Table {
+  id             String      @id @default(cuid())
+  label          String      @unique  // backward compat only; UI uses number
+  number         Int         @unique // restaurant table number (1..20, no 7/14)
+  capacity       Int
+  zone           String      @default("MAIN")
+  status         String      @default("FREE")
+  lastSeatedAt   DateTime?
+  expectedFreeAt DateTime?
+
+  seatings       Seating[]
+}
+
+/// A workspace is a service session (e.g. Saturday night). It uses one template and has its own waitlist + table states.
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Sat 29/1 19:00" or user-defined
+  templateId  String
+  template    SeatingTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  isActive    Boolean  @default(false)
+
+  parties     Party[]
+  tableStates WorkspaceTableState[]
+}
+
+/// Runtime table status per workspace. Created from template when workspace is created.
+model WorkspaceTableState {
+  id          String   @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  tableNumber Int
+  capacity    Int
+
+  status      String   @default("FREE")  // FREE, OCCUPIED, TURNING
+  lastSeatedAt DateTime?
+  expectedFreeAt DateTime?
+
+  seatings    Seating[]
+
+  @@unique([workspaceId, tableNumber])
+}
+
+model Seating {
+  id         String   @id @default(cuid())
+
+  party      Party    @relation(fields: [partyId], references: [id])
+  partyId    String
+
+  table      Table?   @relation(fields: [tableId], references: [id])
+  tableId    String?
+
+  /// When seating in a workspace, link to workspace table state.
+  workspaceTableState   WorkspaceTableState? @relation(fields: [workspaceTableStateId], references: [id], onDelete: SetNull)
+  workspaceTableStateId String?
+
+  seatedAt   DateTime
+  clearedAt  DateTime?
+  durationMin Int?
+}
+
+/// Seating layout template (e.g. "Saturday Floor", "Winter Layout"). One can be default/active.
+model SeatingTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     TemplateTable[]
+  workspaces Workspace[]
+}
+
+/// One table definition inside a template: number, seats, position, size and rotation on the canvas.
+model TemplateTable {
+  id         String          @id @default(cuid())
+  templateId String
+  template   SeatingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  tableNumber Int
+  seats       Int
+  x           Int
+  y           Int
+  w           Int
+  h           Int
+  rotDeg      Int    @default(0)  // rotation degrees 0–360
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([templateId, tableNumber])
+}
+

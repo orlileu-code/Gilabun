@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Design tokens are injected from src/ui/theme.ts via layout.
+   Do NOT define colors here – edit theme.ts to change the UI.
+   ============================================================ */
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.35;
+}
+
+/* Typography: App title 18px semibold, section 14px semibold, table 16px bold, party 14px medium, meta 12px */
+.app-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+.section-header {
+  font-size: 14px;
+  font-weight: 600;
+}
+.table-number {
+  font-size: 16px;
+  font-weight: 700;
+}
+.party-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.meta-text {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-muted {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 0.5rem 0.75rem;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--primary-action);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.select {
+  @apply input;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, border-color 0.15s;
+  outline: none;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-primary {
+  background: var(--primary-action);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-action-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.btn-danger {
+  background: var(--red);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--panel-2);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-pill-waiting {
+  background: var(--status-pill-waiting-bg);
+  color: var(--status-pill-waiting-text);
+}
+
+.status-pill-seated {
+  background: var(--status-pill-seated-bg);
+  color: var(--primary-action);
+}
+
+.status-pill-canceled,
+.status-pill-no_show {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+
+/* Table status – muted, elegant */
+.table-free {
+  background: var(--table-free-fill);
+  border-color: var(--table-free-border);
+  color: var(--table-free-text);
+}
+
+.table-occupied {
+  background: var(--table-occupied-fill);
+  border-color: var(--table-occupied-border);
+  color: var(--table-occupied-text);
+}
+
+.table-turning,
+.table-overdue {
+  background: var(--table-turning-fill);
+  border-color: var(--table-turning-border);
+  color: var(--table-turning-text);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: 28rem;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+@media (min-width: 768px) {
+  .layout-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
