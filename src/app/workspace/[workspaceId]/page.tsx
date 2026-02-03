@@ -12,6 +12,8 @@ import {
 } from "../../actions";
 import { WorkspaceServiceView } from "../../components/WorkspaceServiceView";
 
+export const dynamic = "force-dynamic";
+
 function minutesSinceCreated(createdAt: Date): number {
   return Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
 }

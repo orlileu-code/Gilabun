@@ -3,6 +3,8 @@ import { getUserId } from "@/lib/firebase/admin";
 import { getTemplates, setActiveTemplateFormAction } from "../templateActions";
 import { TopBar } from "../components/TopBar";
 
+export const dynamic = "force-dynamic";
+
 export default async function ChooseTemplatePage() {
   const userId = getUserId();
   const templates = await getTemplates(userId);

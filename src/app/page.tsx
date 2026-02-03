@@ -9,6 +9,8 @@ import { getTemplates } from "./templateActions";
 import { getUserId } from "@/lib/firebase/admin";
 import { StartNewWorkspaceForm } from "./components/StartNewWorkspaceForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   let workspaces: Awaited<ReturnType<typeof listWorkspaces>> = [];
   let templates: Awaited<ReturnType<typeof getTemplates>> = [];

@@ -6,6 +6,8 @@ import { TopBar } from "../../components/TopBar";
 import { BuilderView } from "../../components/BuilderView";
 import { setActiveTemplateFormAction } from "../../templateActions";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ templateId: string }> };
 
 export default async function BuilderPage({ params }: Props) {
