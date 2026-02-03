@@ -27,7 +27,9 @@ const firebaseAuthPkgBrowserPath = path.resolve(
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ["firebase", "firebase-admin", "@firebase/auth", "undici"],
+  experimental: {
+    serverComponentsExternalPackages: ["firebase", "firebase-admin", "@firebase/auth", "undici"],
+  },
   webpack: (config, { isServer, webpack: wp }) => {
     if (!isServer) {
       config.resolve.conditionNames = ["browser", "module", "import", "require", "default"];
