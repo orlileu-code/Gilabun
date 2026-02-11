@@ -146,7 +146,7 @@ function FloorCanvasInner({
     return m;
   }, [tableStates]);
 
-  const safeLabels = templateLabels ?? [];
+  const safeLabels = useMemo(() => templateLabels ?? [], [templateLabels]);
   const combinedBoundsForFit = useMemo(
     () => [
       ...templateTables.map((t) => ({ x: t.x, y: t.y, w: t.w, h: t.h })),
@@ -210,60 +210,14 @@ function FloorCanvasInner({
     e.dataTransfer.dropEffect = "move";
   }, []);
 
-  // Builder mode: fixed canvas, raw x/y/w/h
-  if (mode === "builder") {
-    return (
-      <div ref={containerRef} className="h-full min-h-[28rem] w-full overflow-auto bg-[var(--bg)]">
-        <Panel
-          variant="floor"
-          className="relative"
-          style={{
-            width: `${canvasWidth}px`,
-            height: `${canvasHeight}px`,
-            minWidth: `${canvasWidth}px`,
-            minHeight: `${canvasHeight}px`
-          }}
-        >
-          {templateTables.map((item) => {
-            const rotDeg = item.rotDeg ?? 0;
-            return (
-              <div
-                key={item.tableNumber}
-                className="absolute flex items-center justify-center"
-                style={{
-                  left: item.x,
-                  top: item.y,
-                  width: item.w,
-                  height: item.h
-                }}
-              >
-                <div
-                  className="h-full w-full"
-                  style={{
-                    transform: rotDeg ? `rotate(${rotDeg}deg)` : undefined,
-                    transformOrigin: "center center"
-                  }}
-                >
-                  <Tile variant="table-placeholder" rounded="none" padding="md" className="h-full flex flex-col items-center justify-center text-center">
-                    <span className="table-number text-[16px]">{item.tableNumber}</span>
-                    <span className="mt-1 meta-text">{item.seats} seats</span>
-                  </Tile>
-                </div>
-              </div>
-            );
-          })}
-        </Panel>
-      </div>
-    );
-  }
-
-  // Workspace mode: fit-to-canvas, per-element scaled coordinates (no parent transform)
+  // Compute workspace mode values unconditionally (hooks must be called in same order)
   const scale = fit?.scale ?? 1;
   const offsetX = fit?.offsetX ?? 0;
   const offsetY = fit?.offsetY ?? 0;
   const minX = fit?.minX ?? 0;
   const minY = fit?.minY ?? 0;
 
+  // All hooks must be called before any early returns
   const labelsRender = useMemo(
     () =>
       safeLabels.map((label) => {
@@ -312,6 +266,55 @@ function FloorCanvasInner({
     }
     return set;
   }, [draggingPartySize, tableStates]);
+
+  // Builder mode: fixed canvas, raw x/y/w/h
+  if (mode === "builder") {
+    return (
+      <div ref={containerRef} className="h-full min-h-[28rem] w-full overflow-auto bg-[var(--bg)]">
+        <Panel
+          variant="floor"
+          className="relative"
+          style={{
+            width: `${canvasWidth}px`,
+            height: `${canvasHeight}px`,
+            minWidth: `${canvasWidth}px`,
+            minHeight: `${canvasHeight}px`
+          }}
+        >
+          {templateTables.map((item) => {
+            const rotDeg = item.rotDeg ?? 0;
+            return (
+              <div
+                key={item.tableNumber}
+                className="absolute flex items-center justify-center"
+                style={{
+                  left: item.x,
+                  top: item.y,
+                  width: item.w,
+                  height: item.h
+                }}
+              >
+                <div
+                  className="h-full w-full"
+                  style={{
+                    transform: rotDeg ? `rotate(${rotDeg}deg)` : undefined,
+                    transformOrigin: "center center"
+                  }}
+                >
+                  <Tile variant="table-placeholder" rounded="none" padding="md" className="h-full flex flex-col items-center justify-center text-center">
+                    <span className="table-number text-[16px]">{item.tableNumber}</span>
+                    <span className="mt-1 meta-text">{item.seats} seats</span>
+                  </Tile>
+                </div>
+              </div>
+            );
+          })}
+        </Panel>
+      </div>
+    );
+  }
+
+  // Workspace mode: fit-to-canvas, per-element scaled coordinates (no parent transform)
 
   return (
     <div ref={containerRef} className="h-full min-h-[28rem] w-full overflow-hidden bg-[var(--bg)]">

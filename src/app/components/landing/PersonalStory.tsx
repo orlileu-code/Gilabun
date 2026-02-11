@@ -12,7 +12,7 @@ export function PersonalStory() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
         className="max-w-4xl mx-auto"
       >
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 md:p-10">
