@@ -9,7 +9,6 @@ export async function signInWithGoogle(): Promise<string> {
   if (!app) throw new Error("Firebase not configured");
   const auth = getAuth(app);
   const result = await signInWithPopup(auth, new GoogleAuthProvider());
-  const token = await result.user.getIdToken();
-  await auth.signOut();
+  const token = await result.user.getIdToken(true);
   return token;
 }

@@ -22,7 +22,8 @@ export default function LoginPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Sign in failed");
+        const msg = data.details ? `${data.error}: ${data.details}` : (data.error || "Sign in failed");
+        throw new Error(msg);
       }
       router.push("/app");
       router.refresh();

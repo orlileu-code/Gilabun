@@ -20,15 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const auth = getAuth(getAdminApp());
-    const decoded = await auth.verifyIdToken(idToken);
-    // Optional: require recent sign-in (auth_time within 5 min)
-    const authTime = decoded.auth_time;
-    if (authTime && Date.now() / 1000 - authTime > 5 * 60) {
-      return NextResponse.json(
-        { error: "Recent sign-in required" },
-        { status: 401 }
-      );
-    }
+    await auth.verifyIdToken(idToken);
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE * 1000
     });
@@ -42,8 +34,10 @@ export async function POST(request: NextRequest) {
     });
     return res;
   } catch (e) {
+    console.error("[session] Failed to create session:", e);
+    const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create session" },
+      { error: "Failed to create session", details: process.env.NODE_ENV === "development" ? msg : undefined },
       { status: 401 }
     );
   }
