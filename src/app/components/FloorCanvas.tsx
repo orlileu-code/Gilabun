@@ -282,13 +282,13 @@ function FloorCanvasInner({
         backgroundSize: "12px 12px"
       }}
     >
-          {/* Floor labels: visual-only landmarks – use Tile primitive */}
+          {/* Floor labels: identical to BuilderCanvas – border/bg/span structure */}
           {safeLabels.map((label) => {
             const rotDeg = label.rotDeg ?? 0;
             return (
               <div
                 key={label.id}
-                className="pointer-events-none absolute flex items-center justify-center"
+                className="pointer-events-none absolute rounded-none border border-[var(--label-border)] bg-[var(--label-bg)] outline-none shadow-none"
                 style={{
                   left: label.x,
                   top: label.y,
@@ -297,17 +297,15 @@ function FloorCanvasInner({
                 }}
               >
                 <div
-                  className="flex h-full w-full items-center justify-center"
+                  className="flex h-full w-full items-center justify-center px-1 py-0.5 text-center"
                   style={{
                     transform: rotDeg ? `rotate(${rotDeg}deg)` : undefined,
                     transformOrigin: "center center"
                   }}
                 >
-                  <div style={{ fontSize: "max(0.6rem, 9px)" }}>
-                    <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none">
-                      {label.text}
-                    </Tile>
-                  </div>
+                  <span className="text-[0.65rem] font-medium uppercase tracking-wide text-[var(--label-text)]">
+                    {label.text}
+                  </span>
                 </div>
               </div>
             );
