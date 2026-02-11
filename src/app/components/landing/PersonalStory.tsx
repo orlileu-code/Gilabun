@@ -15,7 +15,7 @@ export function PersonalStory() {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
         className="max-w-4xl mx-auto"
       >
-        <div className="rounded-2xl border border-brown-200 bg-amber-50 p-8 md:p-10 shadow-sm">
+        <div className="rounded-2xl border border-brown-200 bg-white p-8 md:p-10 shadow-sm">
           <h2 className="text-2xl font-semibold text-brown-900 mb-6">
             Why we built TableFlow
           </h2>

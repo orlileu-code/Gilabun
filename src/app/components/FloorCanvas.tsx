@@ -161,10 +161,13 @@ function FloorCanvasInner({
     [templateTables, safeLabels]
   );
 
-  // Builder: fixed canvas from layout bounds (tables only; builder doesn't use FloorCanvas for labels)
+  // Builder: same canvas size rule as workspace (tables + labels) for sync
   const { width: canvasWidth, height: canvasHeight } = useMemo(
-    () => getCanvasSize(templateTables),
-    [templateTables]
+    () =>
+      getCanvasSize(
+        combinedBoundsForFit.length > 0 ? combinedBoundsForFit : templateTables
+      ),
+    [combinedBoundsForFit, templateTables]
   );
 
   // Workspace: use same canvas size calculation as builder (fixed coordinate system)
@@ -328,21 +331,21 @@ function FloorCanvasInner({
     );
   }
 
-  // Workspace mode: fixed coordinate system matching builder exactly
+  // Workspace mode: fixed coordinate system matching builder exactly (same grid and chrome as BuilderCanvas)
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full overflow-x-hidden bg-[var(--bg)]"
+      className="relative w-full overflow-x-hidden rounded-lg border border-[var(--floor-border)] bg-[var(--floor-bg)]"
       style={{
         boxShadow: "var(--shadow)"
       }}
     >
-        {/* Subtle grid so floor reads like the builder canvas */}
+        {/* Grid matches BuilderCanvas (12px) */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px)",
-            backgroundSize: "20px 20px"
+            backgroundImage: "linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)",
+            backgroundSize: "12px 12px"
           }}
           aria-hidden
         />

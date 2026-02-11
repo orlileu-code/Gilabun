@@ -7,63 +7,63 @@
  */
 
 export const colors = {
-  // Page & panels
-  pageBg: "#ECEFF1",
-  panelLight: "#F4F6F8",
-  panelDark: "#3E4348",
+  // Page & panels – black / white / brown (no yellow tint)
+  pageBg: "#FAFAFA",
+  panelLight: "#F5F5F5",
+  panelDark: "#2C2419",
   panelWhite: "#ffffff",
-  panelWhiteMuted: "#F8F9FA",
+  panelWhiteMuted: "#F5F5F5",
 
-  // Borders
-  border: "#D5DADF",
-  borderDark: "#35383C",
+  // Borders (neutral gray)
+  border: "#E5E5E5",
+  borderDark: "#3D362D",
 
   // Right panel (waitlist)
-  textOnDark: "#EDEDED",
-  textOnDarkMuted: "#B8BCC2",
-  waitlistRow: "#45494E",
-  waitlistRowBorder: "#35383C",
-  waitlistFirst: "#E6B450",
-  waitlistNewest: "#4A90E2",
-  waitlistBadge: "#35383C",
+  textOnDark: "#F5F5F0",
+  textOnDarkMuted: "#B8B0A0",
+  waitlistRow: "#3D362D",
+  waitlistRowBorder: "#2C2419",
+  waitlistFirst: "#8B7355",
+  waitlistNewest: "#6B5344",
+  waitlistBadge: "#2C2419",
 
   // Text (light contexts)
-  textPrimary: "#1A1D21",
-  textSecondary: "#6B7280",
+  textPrimary: "#1A1814",
+  textSecondary: "#5C5348",
 
-  // Table status – FREE
-  tableFreeBg: "#E6F2E8",
-  tableFreeBorder: "#8DB79A",
-  tableFreeText: "#2F6F44",
+  // Table status – FREE (neutral green tint, fits brown palette)
+  tableFreeBg: "#E8EDE6",
+  tableFreeBorder: "#7D8B76",
+  tableFreeText: "#2D3D28",
 
-  // Table status – OCCUPIED
-  tableOccupiedBg: "#F6E7D7",
-  tableOccupiedBorder: "#D8A36A",
-  tableOccupiedText: "#8A4B16",
+  // Table status – OCCUPIED (warm brown/tan – clearly not red)
+  tableOccupiedBg: "#E8E6E4",
+  tableOccupiedBorder: "#5C4033",
+  tableOccupiedText: "#3D2C22",
 
-  // Table status – TURNING / OVERDUE
+  // Table status – TURNING / OVERDUE (red – distinct from Occupied)
   tableTurningBg: "#F2D6D3",
   tableTurningBorder: "#C44A3D",
   tableTurningText: "#7B1E17",
 
   // Structural labels (Restroom, Bar, Kitchen)
-  labelText: "#9CA3AF",
+  labelText: "#6B6358",
   labelBg: "rgba(0, 0, 0, 0.02)",
-  labelBorder: "#E5E7EB",
+  labelBorder: "#E5E5E5",
 
-  // Primary action
-  accentBlue: "#2F80ED",
-  accentBlueHover: "#1C6ED5",
+  // Primary action – chocolate brown (no amber)
+  accentBlue: "#4A3528",
+  accentBlueHover: "#3D2C22",
 
   // Utils
   red: "#C44A3D",
-  /** Focus ring for inputs (matches accentBlue with opacity) */
-  focusRing: "rgba(47, 128, 237, 0.2)",
-  /** Status pill waiting (matches waitlistFirst) */
-  statusPillWaitingBg: "rgba(230, 180, 80, 0.2)",
-  statusPillWaitingText: "#B8860B",
-  /** Status pill seated (matches accentBlue) */
-  statusPillSeatedBg: "rgba(47, 128, 237, 0.15)",
+  /** Focus ring for inputs (brown with opacity) */
+  focusRing: "rgba(74, 53, 40, 0.2)",
+  /** Status pill waiting */
+  statusPillWaitingBg: "rgba(92, 64, 51, 0.15)",
+  statusPillWaitingText: "#5C5348",
+  /** Status pill seated (brown) */
+  statusPillSeatedBg: "rgba(74, 53, 40, 0.15)",
 } as const;
 
 export const spacing = {

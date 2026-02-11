@@ -13,7 +13,7 @@ import { Footer } from "./components/landing/Footer"
 export default function LandingPage() {
   return (
     <SmoothScroll>
-      <main className="min-h-screen bg-zinc-950">
+      <main className="min-h-screen bg-[#FFFFFF]">
         <Navbar />
         <Hero />
         <LogoMarquee />

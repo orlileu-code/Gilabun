@@ -10,7 +10,7 @@ export function FinalCTA() {
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section className="py-24 px-4 bg-amber-50">
+    <section className="py-24 px-4 bg-white">
       <motion.div
         ref={ref}
         initial={{ opacity: 0, y: 40 }}

@@ -29,7 +29,7 @@ export function Reviews() {
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section id="reviews" ref={ref} className="py-24 px-4 bg-amber-50">
+    <section id="reviews" ref={ref} className="py-24 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -61,7 +61,7 @@ export function Reviews() {
             >
               <div className="flex items-center gap-1 mb-3">
                 {[...Array(review.stars)].map((_, i) => (
-                  <span key={i} className="text-amber-500 text-sm">★</span>
+                  <span key={i} className="text-brown-600 text-sm">★</span>
                 ))}
               </div>
               <p className="text-brown-700 mb-4 italic leading-relaxed">

@@ -56,12 +56,12 @@ export function BentoGrid() {
           {/* Large card - Live Floor Map */}
           <motion.div
             variants={itemVariants}
-            className="md:col-span-2 group relative p-6 rounded-2xl bg-amber-50 border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 overflow-hidden"
+            className="md:col-span-2 group relative p-6 rounded-2xl bg-white border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 overflow-hidden shadow-sm"
           >
             <div className="flex items-start justify-between mb-8">
               <div>
                 <div className="p-2 rounded-lg bg-brown-100 w-fit mb-4">
-                  <MapPin className="w-5 h-5 text-brown-700" strokeWidth={1.5} />
+                  <MapPin className="w-5 h-5 text-brown-800" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-xl font-semibold text-brown-900 mb-2">Live Floor Map</h3>
                 <p className="text-brown-600 text-sm">
@@ -74,7 +74,7 @@ export function BentoGrid() {
                 <div key={status} className="text-center p-3 rounded-lg bg-white border border-brown-200">
                   <div className={`text-lg font-bold mb-1 ${
                     status === "FREE" ? "text-emerald-600" : 
-                    status === "OCCUPIED" ? "text-orange-600" : 
+                    status === "OCCUPIED" ? "text-brown-600" : 
                     "text-red-600"
                   }`}>
                     {status}
@@ -88,10 +88,10 @@ export function BentoGrid() {
           {/* Smart Waitlist */}
           <motion.div
             variants={itemVariants}
-            className="group relative p-6 rounded-2xl bg-amber-50 border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300"
+            className="group relative p-6 rounded-2xl bg-white border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 shadow-sm"
           >
             <div className="p-2 rounded-lg bg-brown-100 w-fit mb-4">
-              <Users className="w-5 h-5 text-brown-700" strokeWidth={1.5} />
+              <Users className="w-5 h-5 text-brown-800" strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-semibold text-brown-900 mb-2">Smart Waitlist</h3>
             <p className="text-brown-600 text-sm mb-6">
@@ -106,10 +106,10 @@ export function BentoGrid() {
           {/* Real-time Sync */}
           <motion.div
             variants={itemVariants}
-            className="group relative p-6 rounded-2xl bg-amber-50 border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300"
+            className="group relative p-6 rounded-2xl bg-white border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 shadow-sm"
           >
             <div className="p-2 rounded-lg bg-brown-100 w-fit mb-4">
-              <Zap className="w-5 h-5 text-brown-700" strokeWidth={1.5} />
+              <Zap className="w-5 h-5 text-brown-800" strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-semibold text-brown-900 mb-2">Real-time Sync</h3>
             <p className="text-brown-600 text-sm mb-4">
@@ -124,10 +124,10 @@ export function BentoGrid() {
           {/* Drag & Drop Seating */}
           <motion.div
             variants={itemVariants}
-            className="group relative p-6 rounded-2xl bg-amber-50 border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300"
+            className="group relative p-6 rounded-2xl bg-white border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 shadow-sm"
           >
             <div className="p-2 rounded-lg bg-brown-100 w-fit mb-4">
-              <LayoutGrid className="w-5 h-5 text-brown-700" strokeWidth={1.5} />
+              <LayoutGrid className="w-5 h-5 text-brown-800" strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-semibold text-brown-900 mb-2">Drag & Drop Seating</h3>
             <p className="text-brown-600 text-sm mb-4">
@@ -139,17 +139,17 @@ export function BentoGrid() {
           {/* Analytics & Insights */}
           <motion.div
             variants={itemVariants}
-            className="group relative p-6 rounded-2xl bg-amber-50 border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300"
+            className="group relative p-6 rounded-2xl bg-white border border-brown-200 hover:border-brown-300 hover:scale-[1.02] transition-all duration-300 shadow-sm"
           >
             <div className="p-2 rounded-lg bg-brown-100 w-fit mb-4">
-              <TrendingUp className="w-5 h-5 text-brown-700" strokeWidth={1.5} />
+              <TrendingUp className="w-5 h-5 text-brown-800" strokeWidth={1.5} />
             </div>
             <h3 className="text-lg font-semibold text-brown-900 mb-2">Wait Time Tracking</h3>
             <p className="text-brown-600 text-sm mb-4">
               Monitor average wait times, table turnover, and identify bottlenecks in real-time.
             </p>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 text-xs bg-white border border-brown-200 rounded text-brown-600">Live metrics</span>
+              <span className="px-2 py-1 text-xs bg-white border border-brown-300 rounded text-brown-800">Live metrics</span>
             </div>
           </motion.div>
         </motion.div>

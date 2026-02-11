@@ -35,8 +35,8 @@ export function Footer() {
               The modern platform for restaurants who want smoother service.
             </p>
             {/* System Status */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-brown-200">
-              <span className="w-2 h-2 rounded-full bg-amber-600 pulse-glow" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-brown-200">
+              <span className="w-2 h-2 rounded-full bg-brown-700 pulse-glow" />
               <span className="text-xs text-brown-600">All Systems Operational</span>
             </div>
           </div>
