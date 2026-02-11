@@ -61,12 +61,12 @@ export function getTemplateBounds(
 }
 
 /** Allow strong zoom-out so floor always fits in viewport — host never has to scroll. */
-export const FIT_SCALE_MIN = 0.15;
+export const FIT_SCALE_MIN = 0.1;
 export const FIT_SCALE_MAX = 2.5;
-export const FIT_PADDING_PX = 24;
+export const FIT_PADDING_PX = 12;
 
 /** Smallest table dimension (px) we allow when scaling; below this tables become unreadable. */
-export const MIN_TABLE_RENDER_PX = 40;
+export const MIN_TABLE_RENDER_PX = 30;
 
 /**
  * Compute uniform scale and offset to fit template bounds in container (workspace mode).
@@ -102,7 +102,13 @@ export function getFitScaleAndOffset(
         minReadableScale = MIN_TABLE_RENDER_PX / smallestTableDimension;
       }
     }
-    scale = Math.max(fitScale, minReadableScale);
+    // Prioritize fitting all tables - use fitScale if reasonable, but don't let minReadableScale prevent fitting
+    if (fitScale < minReadableScale && minReadableScale > FIT_SCALE_MIN * 2) {
+      // If minReadableScale is too restrictive, prefer fitScale to show all tables
+      scale = Math.max(fitScale, FIT_SCALE_MIN);
+    } else {
+      scale = Math.max(fitScale, minReadableScale);
+    }
     scale = Math.max(FIT_SCALE_MIN, Math.min(FIT_SCALE_MAX, scale));
   }
   const scaledW = bounds.width * scale;
