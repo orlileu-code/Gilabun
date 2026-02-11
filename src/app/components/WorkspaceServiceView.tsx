@@ -649,6 +649,7 @@ export function WorkspaceServiceView({
                   removeChairAction={removeChair}
                   showToast={showToast}
                   onClearSuccess={onClearSuccess}
+                  nowMs={nowMs}
                 />
               )}
             </div>
