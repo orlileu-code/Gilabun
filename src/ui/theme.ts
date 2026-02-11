@@ -161,5 +161,19 @@ export function themeToCssVars(): Record<string, string> {
     "--shadow": shadow.sm,
     "--table-tile-shadow": shadow.tableTile,
     "--font": fontFamily,
+    // shadcn-style semantic tokens (for components/ui)
+    "--background": colors.panelWhite,
+    "--foreground": colors.textPrimary,
+    "--primary": colors.accentBlue,
+    "--primary-foreground": "#F5F5F0",
+    "--secondary": colors.panelWhiteMuted,
+    "--secondary-foreground": colors.textPrimary,
+    "--accent": colors.panelLight,
+    "--accent-foreground": colors.textPrimary,
+    "--muted-foreground": colors.textSecondary,
+    "--input": colors.border,
+    "--ring": colors.accentBlue,
+    "--destructive": colors.red,
+    "--destructive-foreground": "#F5F5F0",
   };
 }

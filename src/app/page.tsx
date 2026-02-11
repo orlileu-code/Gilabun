@@ -9,6 +9,7 @@ import { Reviews } from "./components/landing/Reviews"
 import { PersonalStory } from "./components/landing/PersonalStory"
 import { FinalCTA } from "./components/landing/FinalCTA"
 import { Footer } from "./components/landing/Footer"
+import { PricingSection } from "./components/landing/PricingSection"
 
 export default function LandingPage() {
   return (
@@ -20,6 +21,7 @@ export default function LandingPage() {
         <BentoGrid />
         <Reviews />
         <PersonalStory />
+        <PricingSection />
         <FinalCTA />
         <Footer />
       </main>
