@@ -3,8 +3,8 @@
  * Ensures workspace floor matches template builder geometry exactly.
  */
 
-export const CANVAS_BASE_MIN_WIDTH = 900;
-export const CANVAS_BASE_MIN_HEIGHT = 900;
+export const CANVAS_BASE_MIN_WIDTH = 700;
+export const CANVAS_BASE_MIN_HEIGHT = 550;
 
 export type TemplateTableGeometry = {
   tableNumber: number;
