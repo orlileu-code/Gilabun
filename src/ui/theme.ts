@@ -36,10 +36,10 @@ export const colors = {
   tableFreeBorder: "#7D8B76",
   tableFreeText: "#2D3D28",
 
-  // Table status – OCCUPIED (warm brown/tan – clearly not red)
-  tableOccupiedBg: "#E8E6E4",
-  tableOccupiedBorder: "#5C4033",
-  tableOccupiedText: "#3D2C22",
+  // Table status – OCCUPIED (bright orange)
+  tableOccupiedBg: "#FFEDE0",
+  tableOccupiedBorder: "#EA580C",
+  tableOccupiedText: "#9A3412",
 
   // Table status – TURNING / OVERDUE (red – distinct from Occupied)
   tableTurningBg: "#F2D6D3",
