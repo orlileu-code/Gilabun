@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState, useMemo, memo } from "react";
-import { getCanvasSize } from "@/lib/floorLayout";
+import { useCallback, useRef, useState, useMemo, memo, useEffect } from "react";
+import { getCanvasSize, getFitTransform } from "@/lib/floorLayout";
 import { TableTile } from "./TableTile";
 import { Panel, Tile } from "@/ui";
 import { TableStatus } from "@/lib/enums";
@@ -96,6 +96,8 @@ type FloorCanvasProps = {
   onClearSuccess?: () => void;
   /** Current time snapshot (ms) for consistent “overdue” calculations. */
   nowMs: number;
+  /** Callback to expose fit handler for external use (e.g., Fit button) */
+  onFitReady?: (fitHandler: () => void) => void;
 };
 
 /**
@@ -130,9 +132,12 @@ function FloorCanvasInner({
   inFlightTableNumbers = {},
   showToast,
   onClearSuccess,
-  nowMs
+  nowMs,
+  onFitReady
 }: FloorCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     // eslint-disable-next-line no-console
     console.count("FloorCanvas render");
@@ -168,7 +173,69 @@ function FloorCanvasInner({
     return getCanvasSize(combinedBoundsForFit);
   }, [mode, combinedBoundsForFit]);
 
-  // Workspace: default scale = 1, no auto-fit (fit button will handle scaling later)
+  // Workspace: measure viewport size for fit calculation (card-body is the scrollable container)
+  useEffect(() => {
+    if (mode !== "workspace" || !containerRef.current) return;
+    const viewportEl = containerRef.current.parentElement; // card-body is the parent
+    if (!viewportEl) return;
+    const updateSize = () => {
+      setViewportSize({ width: viewportEl.clientWidth || 0, height: viewportEl.clientHeight || 0 });
+    };
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(viewportEl);
+    return () => observer.disconnect();
+  }, [mode]);
+
+  // Workspace: auto-fit on mount and when bounds/viewport change
+  useEffect(() => {
+    if (
+      mode !== "workspace" ||
+      viewportSize.width === 0 ||
+      viewportSize.height === 0 ||
+      combinedBoundsForFit.length === 0
+    ) {
+      return;
+    }
+    
+    // Wait for layout to settle
+    const timeoutId = setTimeout(() => {
+      const fit = getFitTransform(
+        combinedBoundsForFit,
+        viewportSize.width,
+        viewportSize.height
+      );
+      setWorkspaceScale(fit.scale);
+      setWorkspaceTranslateX(fit.translateX);
+      setWorkspaceTranslateY(fit.translateY);
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, [mode, viewportSize.width, viewportSize.height, combinedBoundsForFit]);
+
+  // Workspace: fit button handler
+  const handleFit = useCallback(() => {
+    if (mode !== "workspace" || !containerRef.current || combinedBoundsForFit.length === 0) return;
+    const viewportEl = containerRef.current.parentElement; // card-body is the parent
+    if (!viewportEl) return;
+    const fit = getFitTransform(
+      combinedBoundsForFit,
+      viewportEl.clientWidth || 0,
+      viewportEl.clientHeight || 0
+    );
+    setWorkspaceScale(fit.scale);
+    setWorkspaceTranslateX(fit.translateX);
+    setWorkspaceTranslateY(fit.translateY);
+  }, [mode, combinedBoundsForFit]);
+
+  // Expose fit handler to parent component
+  useEffect(() => {
+    if (mode === "workspace" && onFitReady) {
+      onFitReady(handleFit);
+    }
+  }, [mode, onFitReady, handleFit]);
+
+  // Workspace: scale and translate state
   const [workspaceScale, setWorkspaceScale] = useState(1);
   const [workspaceTranslateX, setWorkspaceTranslateX] = useState(0);
   const [workspaceTranslateY, setWorkspaceTranslateY] = useState(0);

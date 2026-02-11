@@ -63,6 +63,8 @@ type FloorMapProps = {
   onClearSuccess?: () => void;
   /** Current time snapshot (ms) for consistent “overdue” calculations. */
   nowMs: number;
+  /** Callback to expose fit handler for external use (e.g., Fit button) */
+  onFitReady?: (fitHandler: () => void) => void;
 };
 
 function FloorMapInner({
@@ -93,7 +95,8 @@ function FloorMapInner({
   inFlightTableNumbers = {},
   showToast,
   onClearSuccess,
-  nowMs
+  nowMs,
+  onFitReady
 }: FloorMapProps) {
   const templateTables = useMemo(
     () =>
@@ -140,6 +143,7 @@ function FloorMapInner({
         showToast={showToast}
         onClearSuccess={onClearSuccess}
         nowMs={nowMs}
+        onFitReady={onFitReady}
       />
     </Panel>
   );

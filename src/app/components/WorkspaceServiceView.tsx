@@ -285,6 +285,7 @@ export function WorkspaceServiceView({
   const [selectedCombo, setSelectedCombo] = useState<WorkspaceCombo | null>(null);
   const [splitLoading, setSplitLoading] = useState(false);
   const [addPartyModalOpen, setAddPartyModalOpen] = useState(false);
+  const [fitHandler, setFitHandler] = useState<(() => void) | null>(null);
   const onClearSuccess = useCallback(() => router.refresh(), [router]);
 
   const handlePartyAdded = useCallback((party: WorkspaceParty) => {
@@ -612,12 +613,15 @@ export function WorkspaceServiceView({
                     {mergeLoading ? "Merging…" : `Merge (${selectedTableNumbers.size} tables)`}
                   </button>
                 )}
-                <span
-                  className="meta-text rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1 font-medium text-[var(--muted)]"
-                  title="View is fit to floor area"
+                <button
+                  type="button"
+                  onClick={() => fitHandler?.()}
+                  disabled={!fitHandler}
+                  className="meta-text rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1 font-medium text-[var(--muted)] hover:bg-[var(--border)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Fit floor map to viewport"
                 >
                   Fit
-                </span>
+                </button>
               </div>
             </div>
             {/* FloorViewport: flex: 1, min-height: 0, overflow-y: auto, overflow-x: hidden */}
@@ -654,6 +658,7 @@ export function WorkspaceServiceView({
                   showToast={showToast}
                   onClearSuccess={onClearSuccess}
                   nowMs={nowMs}
+                  onFitReady={setFitHandler}
                 />
               )}
             </div>
