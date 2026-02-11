@@ -139,7 +139,7 @@ export default async function WorkspaceDashboardPage({
         </div>
       </section>
 
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         <WorkspaceServiceView
           workspaceId={workspaceId}
           layout={workspace.layout}
