@@ -1,0 +1,106 @@
+/**
+ * Shared floor layout constants and helpers.
+ * Ensures workspace floor matches template builder geometry exactly.
+ */
+
+export const CANVAS_BASE_MIN_WIDTH = 900;
+export const CANVAS_BASE_MIN_HEIGHT = 650;
+
+export type TemplateTableGeometry = {
+  tableNumber: number;
+  seats: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rotDeg: number;
+};
+
+/** Compute canvas size from layout bounds; use minimums so layout never reflows. */
+export function getCanvasSize(items: Array<{ x: number; y: number; w: number; h: number }>): {
+  width: number;
+  height: number;
+} {
+  if (items.length === 0) {
+    return { width: CANVAS_BASE_MIN_WIDTH, height: CANVAS_BASE_MIN_HEIGHT };
+  }
+  const maxX = Math.max(...items.map((i) => i.x + i.w));
+  const maxY = Math.max(...items.map((i) => i.y + i.h));
+  return {
+    width: Math.max(CANVAS_BASE_MIN_WIDTH, maxX + 80),
+    height: Math.max(CANVAS_BASE_MIN_HEIGHT, maxY + 80)
+  };
+}
+
+/** Template bounding box (ignores rotation for v1). Used for fit-to-canvas. */
+export function getTemplateBounds(
+  items: Array<{ x: number; y: number; w: number; h: number }>
+): { minX: number; minY: number; maxX: number; maxY: number; width: number; height: number } {
+  if (items.length === 0) {
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: 400,
+      maxY: 300,
+      width: 400,
+      height: 300
+    };
+  }
+  const minX = Math.min(...items.map((i) => i.x));
+  const minY = Math.min(...items.map((i) => i.y));
+  const maxX = Math.max(...items.map((i) => i.x + i.w));
+  const maxY = Math.max(...items.map((i) => i.y + i.h));
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX,
+    height: maxY - minY
+  };
+}
+
+export const FIT_SCALE_MIN = 0.5;
+export const FIT_SCALE_MAX = 2.5;
+export const FIT_PADDING_PX = 24;
+
+/**
+ * Compute uniform scale and offset to fit template bounds in container (workspace mode).
+ * Does not modify saved coordinates; used only for rendering.
+ */
+export function getFitScaleAndOffset(
+  items: Array<{ x: number; y: number; w: number; h: number }>,
+  containerWidth: number,
+  containerHeight: number,
+  padding: number = FIT_PADDING_PX
+): {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  minX: number;
+  minY: number;
+  boundsWidth: number;
+  boundsHeight: number;
+} {
+  const bounds = getTemplateBounds(items);
+  const availableW = Math.max(0, containerWidth - 2 * padding);
+  const availableH = Math.max(0, containerHeight - 2 * padding);
+  let scale = 1;
+  if (bounds.width > 0 && bounds.height > 0 && availableW > 0 && availableH > 0) {
+    scale = Math.min(availableW / bounds.width, availableH / bounds.height);
+    scale = Math.max(FIT_SCALE_MIN, Math.min(FIT_SCALE_MAX, scale));
+  }
+  const scaledW = bounds.width * scale;
+  const scaledH = bounds.height * scale;
+  const offsetX = padding + (availableW - scaledW) / 2;
+  const offsetY = padding + (availableH - scaledH) / 2;
+  return {
+    scale,
+    offsetX,
+    offsetY,
+    minX: bounds.minX,
+    minY: bounds.minY,
+    boundsWidth: bounds.width,
+    boundsHeight: bounds.height
+  };
+}

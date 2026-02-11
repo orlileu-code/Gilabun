@@ -1,0 +1,10 @@
+rules_version = '2';
+// Firebase Storage: allow authenticated users to read/write their template logos.
+// Path: users/{userId}/templates/{templateId}/logo.{ext}
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/templates/{templateId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
