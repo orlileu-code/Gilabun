@@ -69,9 +69,9 @@ export default async function WorkspaceDashboardPage({
   const combos = workspace.combos ?? [];
 
   return (
-    <div className="flex h-dvh max-h-[100dvh] flex-col overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden">
       <TopBar waitingCount={allWaitingCount} />
-      <div className="mb-2 flex shrink-0 items-center justify-between">
+      <div className="mb-2 flex shrink-0 items-center justify-between px-4">
         <h1 className="text-lg font-semibold text-[var(--text)]">{workspace.name}</h1>
         <Link href="/app" className="btn-ghost text-sm">
           ← Dashboard
@@ -79,7 +79,7 @@ export default async function WorkspaceDashboardPage({
       </div>
 
       {/* Next to seat */}
-      <section className="mb-2 shrink-0">
+      <section className="mb-2 shrink-0 px-4">
         <div className="card border-[var(--primary-action)]/30 bg-[var(--panel)]">
           <div className="card-header">
             <div>
@@ -139,7 +139,7 @@ export default async function WorkspaceDashboardPage({
         </div>
       </section>
 
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-hidden">
         <WorkspaceServiceView
           workspaceId={workspaceId}
           layout={workspace.layout}

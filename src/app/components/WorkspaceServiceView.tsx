@@ -588,9 +588,12 @@ export function WorkspaceServiceView({
 
   return (
     <TimeTickProvider intervalMs={30000}>
-      <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden overflow-y-auto">
-        <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+      {/* ContentRow: flex: 1, min-height: 0, display: flex */}
+      <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden px-4">
+        {/* FloorPanel: flex: 1, min-width: 0, display: flex, flex-direction: column, min-height: 0 */}
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="card flex min-h-0 flex-1 flex-col">
+            {/* FloorTopBar: no scroll */}
             <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="card-title">Floor</div>
@@ -617,7 +620,8 @@ export function WorkspaceServiceView({
                 </span>
               </div>
             </div>
-            <div className="card-body flex min-h-0 flex-1 flex-col overflow-hidden">
+            {/* FloorViewport: flex: 1, min-height: 0, overflow-y: auto, overflow-x: hidden */}
+            <div className="card-body flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
               {layout.length === 0 ? (
                 <p className="meta-text text-[var(--muted)]">This template has no tables.</p>
               ) : (
@@ -656,7 +660,8 @@ export function WorkspaceServiceView({
           </div>
         </section>
 
-        <Panel variant="waitlist" as="section" className="flex min-w-[320px] max-w-[380px] flex-col min-h-0 lg:min-h-[28rem] rounded-none shrink-0">
+        {/* WaitlistPanel: width: 380px, flex: 0 0 380px, overflow-y: auto */}
+        <Panel variant="waitlist" as="section" className="flex w-[380px] flex-shrink-0 flex-col overflow-y-auto rounded-none">
           <div className="flex flex-1 flex-col min-h-0 min-w-0 rounded-none">
             <div className="shrink-0 border-b border-[var(--waitlist-border)] px-2.5 py-2">
               <div className="flex items-center gap-2">

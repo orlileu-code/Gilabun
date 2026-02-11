@@ -266,15 +266,13 @@ function FloorCanvasInner({
   return (
     <div 
       ref={containerRef} 
-      className="h-full min-h-[28rem] w-full overflow-x-hidden overflow-y-auto bg-[var(--bg)]"
+      className="h-full w-full bg-[var(--bg)]"
     >
       {/* FloorViewport: overflow-x hidden, overflow-y auto */}
       <Panel
         variant="floor"
-        className="relative overflow-x-hidden overflow-y-auto"
+        className="relative h-full w-full overflow-x-hidden overflow-y-auto"
         style={{
-          width: "100%",
-          height: "100%",
           boxShadow: "var(--shadow)"
         }}
       >
