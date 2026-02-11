@@ -4,7 +4,7 @@
  */
 
 export const CANVAS_BASE_MIN_WIDTH = 900;
-export const CANVAS_BASE_MIN_HEIGHT = 650;
+export const CANVAS_BASE_MIN_HEIGHT = 900;
 
 export type TemplateTableGeometry = {
   tableNumber: number;
