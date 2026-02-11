@@ -285,7 +285,6 @@ export function WorkspaceServiceView({
   const [selectedCombo, setSelectedCombo] = useState<WorkspaceCombo | null>(null);
   const [splitLoading, setSplitLoading] = useState(false);
   const [addPartyModalOpen, setAddPartyModalOpen] = useState(false);
-  const [fitHandler, setFitHandler] = useState<(() => void) | null>(null);
   const onClearSuccess = useCallback(() => router.refresh(), [router]);
 
   const handlePartyAdded = useCallback((party: WorkspaceParty) => {
@@ -595,15 +594,26 @@ export function WorkspaceServiceView({
         <section className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="card flex min-h-0 flex-1 flex-col">
             {/* Floor header / controls: fixed at top, no scroll */}
-            <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">
-              <div>
-                <div className="card-title">Floor</div>
-                <p className="mt-1 meta-text text-[var(--muted)]">
-                  Green = free · orange = occupied · red = turning/overdue · Shift+click tables to merge
-                </p>
-              </div>
+            <div className="card-header shrink-0">
               <div className="flex items-center gap-2">
-                {selectedTableNumbers.size >= 2 && (
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 shrink-0 rounded object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : null}
+                <h1 className="card-title">{restaurantName || "Floor"}</h1>
+              </div>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Green = free · orange = occupied · red = turning/overdue · Shift+click tables to merge
+              </p>
+              {selectedTableNumbers.size >= 2 && (
+                <div className="mt-2 flex gap-2">
                   <button
                     type="button"
                     disabled={mergeLoading}
@@ -612,20 +622,11 @@ export function WorkspaceServiceView({
                   >
                     {mergeLoading ? "Merging…" : `Merge (${selectedTableNumbers.size} tables)`}
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fitHandler?.()}
-                  disabled={!fitHandler}
-                  className="meta-text rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1 font-medium text-[var(--muted)] hover:bg-[var(--border)] disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Fit floor map to viewport"
-                >
-                  Fit
-                </button>
-              </div>
+                </div>
+              )}
             </div>
-            {/* FloorViewport: flex: 1, min-height: 0, overflow-y: auto, overflow-x: hidden */}
-            <div className="card-body flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            {/* Same as BuilderView: overflow-auto p-2 */}
+            <div className="card-body min-h-0 flex-1 overflow-auto p-2">
               {layout.length === 0 ? (
                 <p className="meta-text text-[var(--muted)]">This template has no tables.</p>
               ) : (
@@ -658,7 +659,6 @@ export function WorkspaceServiceView({
                   showToast={showToast}
                   onClearSuccess={onClearSuccess}
                   nowMs={nowMs}
-                  onFitReady={setFitHandler}
                 />
               )}
             </div>

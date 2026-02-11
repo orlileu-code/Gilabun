@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState, useMemo, memo, useEffect } from "react";
-import { getCanvasSize, getFitTransform } from "@/lib/floorLayout";
+import { useCallback, useRef, useMemo, memo } from "react";
+import { getCanvasSize } from "@/lib/floorLayout";
 import { TableTile } from "./TableTile";
 import { Panel, Tile } from "@/ui";
 import { TableStatus } from "@/lib/enums";
@@ -136,7 +136,6 @@ function FloorCanvasInner({
   onFitReady
 }: FloorCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     // eslint-disable-next-line no-console
@@ -176,72 +175,7 @@ function FloorCanvasInner({
     return getCanvasSize(combinedBoundsForFit);
   }, [mode, combinedBoundsForFit]);
 
-  // Workspace: measure viewport size for fit calculation (card-body is the scrollable container)
-  useEffect(() => {
-    if (mode !== "workspace" || !containerRef.current) return;
-    const viewportEl = containerRef.current.parentElement; // card-body is the parent
-    if (!viewportEl) return;
-    const updateSize = () => {
-      setViewportSize({ width: viewportEl.clientWidth || 0, height: viewportEl.clientHeight || 0 });
-    };
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    observer.observe(viewportEl);
-    return () => observer.disconnect();
-  }, [mode]);
-
-  // Workspace: auto-fit on mount and when bounds/viewport change
-  useEffect(() => {
-    if (
-      mode !== "workspace" ||
-      viewportSize.width === 0 ||
-      viewportSize.height === 0 ||
-      combinedBoundsForFit.length === 0
-    ) {
-      return;
-    }
-    
-    // Wait for layout to settle
-    const timeoutId = setTimeout(() => {
-      const fit = getFitTransform(
-        combinedBoundsForFit,
-        viewportSize.width,
-        viewportSize.height
-      );
-      setWorkspaceScale(fit.scale);
-      setWorkspaceTranslateX(fit.translateX);
-      setWorkspaceTranslateY(fit.translateY);
-    }, 0);
-    
-    return () => clearTimeout(timeoutId);
-  }, [mode, viewportSize.width, viewportSize.height, combinedBoundsForFit]);
-
-  // Workspace: fit button handler
-  const handleFit = useCallback(() => {
-    if (mode !== "workspace" || !containerRef.current || combinedBoundsForFit.length === 0) return;
-    const viewportEl = containerRef.current.parentElement; // card-body is the parent
-    if (!viewportEl) return;
-    const fit = getFitTransform(
-      combinedBoundsForFit,
-      viewportEl.clientWidth || 0,
-      viewportEl.clientHeight || 0
-    );
-    setWorkspaceScale(fit.scale);
-    setWorkspaceTranslateX(fit.translateX);
-    setWorkspaceTranslateY(fit.translateY);
-  }, [mode, combinedBoundsForFit]);
-
-  // Expose fit handler to parent component
-  useEffect(() => {
-    if (mode === "workspace" && onFitReady) {
-      onFitReady(handleFit);
-    }
-  }, [mode, onFitReady, handleFit]);
-
-  // Workspace: scale and translate state
-  const [workspaceScale, setWorkspaceScale] = useState(1);
-  const [workspaceTranslateX, setWorkspaceTranslateX] = useState(0);
-  const [workspaceTranslateY, setWorkspaceTranslateY] = useState(0);
+  // Workspace: no fit scaling – match BuilderCanvas 1:1 exactly
 
   const handleDrop = useCallback(
     (e: React.DragEvent, tableNumber: number) => {
@@ -331,36 +265,23 @@ function FloorCanvasInner({
     );
   }
 
-  // Workspace mode: fixed coordinate system matching builder exactly (same grid and chrome as BuilderCanvas)
+  // Workspace mode: 1:1 fixed canvas – identical to BuilderCanvas (no scaling)
+  const w = workspaceCanvasSize.width;
+  const h = workspaceCanvasSize.height;
   return (
-    <div 
-      ref={containerRef} 
-      className="relative w-full overflow-x-hidden rounded-lg border border-[var(--floor-border)] bg-[var(--floor-bg)]"
+    <div
+      ref={containerRef}
+      className="relative select-none rounded-lg border border-[var(--floor-border)] bg-[var(--floor-bg)] outline-none"
       style={{
-        boxShadow: "var(--shadow)"
+        width: `${w}px`,
+        height: `${h}px`,
+        minWidth: `${w}px`,
+        minHeight: `${h}px`,
+        boxShadow: "var(--shadow)",
+        backgroundImage: "linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)",
+        backgroundSize: "12px 12px"
       }}
     >
-        {/* Grid matches BuilderCanvas (12px) */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: "linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)",
-            backgroundSize: "12px 12px"
-          }}
-          aria-hidden
-        />
-        {/* FloorContent: fixed width/height matching builder, single transform */}
-        <div
-          className="relative"
-          style={{
-            width: `${workspaceCanvasSize.width}px`,
-            height: `${workspaceCanvasSize.height}px`,
-            minWidth: `${workspaceCanvasSize.width}px`,
-            minHeight: `${workspaceCanvasSize.height}px`,
-            transform: `translate(${workspaceTranslateX}px, ${workspaceTranslateY}px) scale(${workspaceScale})`,
-            transformOrigin: "0 0"
-          }}
-        >
           {/* Floor labels: visual-only landmarks – use Tile primitive */}
           {safeLabels.map((label) => {
             const rotDeg = label.rotDeg ?? 0;
@@ -407,9 +328,7 @@ function FloorCanvasInner({
                 table.status === TableStatus.OCCUPIED);
             const rotDeg = item.rotDeg ?? 0;
             // Calculate if compact based on actual size (scale applied via transform)
-            const scaledW = item.w * workspaceScale;
-            const scaledH = item.h * workspaceScale;
-            const isCompact = Math.min(scaledW, scaledH) < 56;
+            const isCompact = Math.min(item.w, item.h) < 56;
 
             return (
               <div
@@ -544,8 +463,7 @@ function FloorCanvasInner({
               </div>
             );
           })}
-        </div>
-      </div>
+    </div>
   );
 }
 
