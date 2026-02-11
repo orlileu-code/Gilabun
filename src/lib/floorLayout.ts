@@ -125,3 +125,57 @@ export function getFitScaleAndOffset(
     boundsHeight: bounds.height
   };
 }
+
+/**
+ * Compute transform (translate + scale) for single wrapper approach.
+ * Returns transform values to apply to a wrapper containing all tables/labels at 1:1 coordinates.
+ * Uses transform-origin: 0 0, so translate accounts for bounds offset.
+ */
+export function getFitTransform(
+  items: Array<{ x: number; y: number; w: number; h: number }>,
+  containerWidth: number,
+  containerHeight: number,
+  padding: number = FIT_PADDING_PX
+): {
+  scale: number;
+  translateX: number;
+  translateY: number;
+  boundsWidth: number;
+  boundsHeight: number;
+} {
+  const bounds = getTemplateBounds(items);
+  const availableW = Math.max(0, containerWidth - 2 * padding);
+  const availableH = Math.max(0, containerHeight - 2 * padding);
+  let scale = 1;
+  if (bounds.width > 0 && bounds.height > 0 && availableW > 0 && availableH > 0) {
+    const fitScale = Math.min(availableW / bounds.width, availableH / bounds.height);
+    let minReadableScale = FIT_SCALE_MIN;
+    if (items.length > 0) {
+      const smallestTableDimension = Math.min(
+        ...items.map((i) => Math.min(i.w, i.h))
+      );
+      if (smallestTableDimension > 0) {
+        minReadableScale = MIN_TABLE_RENDER_PX / smallestTableDimension;
+      }
+    }
+    // Prioritize fitting all tables
+    if (fitScale < minReadableScale && minReadableScale > FIT_SCALE_MIN * 2) {
+      scale = Math.max(fitScale, FIT_SCALE_MIN);
+    } else {
+      scale = Math.max(fitScale, minReadableScale);
+    }
+    scale = Math.max(FIT_SCALE_MIN, Math.min(FIT_SCALE_MAX, scale));
+  }
+  const scaledW = bounds.width * scale;
+  const scaledH = bounds.height * scale;
+  // Translate to center the scaled content, accounting for bounds offset
+  const translateX = padding + (availableW - scaledW) / 2 - bounds.minX * scale;
+  const translateY = padding + (availableH - scaledH) / 2 - bounds.minY * scale;
+  return {
+    scale,
+    translateX,
+    translateY,
+    boundsWidth: bounds.width,
+    boundsHeight: bounds.height
+  };
+}

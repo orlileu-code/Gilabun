@@ -588,8 +588,8 @@ export function WorkspaceServiceView({
 
   return (
     <TimeTickProvider intervalMs={30000}>
-      <main className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section className="flex min-h-0 min-w-0 flex-col">
+      <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
           <div className="card flex min-h-0 flex-1 flex-col">
             <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">
               <div>
@@ -656,7 +656,7 @@ export function WorkspaceServiceView({
           </div>
         </section>
 
-        <Panel variant="waitlist" as="section" className="flex min-w-0 flex-col min-h-0 lg:min-h-[28rem] rounded-none">
+        <Panel variant="waitlist" as="section" className="flex min-w-[320px] max-w-[380px] flex-col min-h-0 lg:min-h-[28rem] rounded-none shrink-0">
           <div className="flex flex-1 flex-col min-h-0 min-w-0 rounded-none">
             <div className="shrink-0 border-b border-[var(--waitlist-border)] px-2.5 py-2">
               <div className="flex items-center gap-2">

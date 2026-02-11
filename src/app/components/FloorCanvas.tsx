@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useEffect, useState, useMemo, memo } from "react";
-import { getCanvasSize, getFitScaleAndOffset } from "@/lib/floorLayout";
+import { getCanvasSize, getFitScaleAndOffset, getFitTransform } from "@/lib/floorLayout";
 import { TableTile } from "./TableTile";
 import { Panel, Tile } from "@/ui";
 import { TableStatus } from "@/lib/enums";
@@ -163,7 +163,7 @@ function FloorCanvasInner({
     [templateTables]
   );
 
-  // Workspace: measure container and compute fit scale + offset (per-element, no CSS scale)
+  // Workspace: measure container and compute fit transform (single wrapper approach)
   useEffect(() => {
     if (mode !== "workspace" || !containerRef.current) return;
     const el = containerRef.current;
@@ -176,10 +176,10 @@ function FloorCanvasInner({
     return () => observer.disconnect();
   }, [mode]);
 
-  const fit = useMemo(
+  const fitTransform = useMemo(
     () =>
       mode === "workspace" && containerSize.width > 0 && containerSize.height > 0
-        ? getFitScaleAndOffset(
+        ? getFitTransform(
             combinedBoundsForFit.length > 0
               ? combinedBoundsForFit
               : [{ x: 0, y: 0, w: 400, h: 300 }],
@@ -212,47 +212,22 @@ function FloorCanvasInner({
     e.dataTransfer.dropEffect = "move";
   }, []);
 
-  // Compute workspace mode values unconditionally (hooks must be called in same order)
-  const scale = fit?.scale ?? 1;
-  const offsetX = fit?.offsetX ?? 0;
-  const offsetY = fit?.offsetY ?? 0;
-  const minX = fit?.minX ?? 0;
-  const minY = fit?.minY ?? 0;
-  const boundsWidth = fit?.boundsWidth ?? 0;
-  const boundsHeight = fit?.boundsHeight ?? 0;
+  // Compute workspace mode transform values unconditionally (hooks must be called in same order)
+  const transformScale = fitTransform?.scale ?? 1;
+  const transformTranslateX = fitTransform?.translateX ?? 0;
+  const transformTranslateY = fitTransform?.translateY ?? 0;
+  const boundsWidth = fitTransform?.boundsWidth ?? 0;
+  const boundsHeight = fitTransform?.boundsHeight ?? 0;
 
-  // All hooks must be called before any early returns
-  const labelsRender = useMemo(
-    () =>
-      safeLabels.map((label) => {
-        const rotDeg = label.rotDeg ?? 0;
-        return {
-          ...label,
-          renderX: (label.x - minX) * scale + offsetX,
-          renderY: (label.y - minY) * scale + offsetY,
-          renderW: label.w * scale,
-          renderH: label.h * scale,
-          rotDeg
-        };
-      }),
-    [safeLabels, minX, minY, scale, offsetX, offsetY]
-  );
-
-  const tablesRender = useMemo(
-    () =>
-      templateTables.map((item) => {
-        const rotDeg = item.rotDeg ?? 0;
-        return {
-          ...item,
-          renderX: (item.x - minX) * scale + offsetX,
-          renderY: (item.y - minY) * scale + offsetY,
-          renderW: item.w * scale,
-          renderH: item.h * scale,
-          rotDeg
-        };
-      }),
-    [templateTables, minX, minY, scale, offsetX, offsetY]
-  );
+  // Calculate canvas size for wrapper (needed for proper bounds)
+  const canvasSize = useMemo(() => {
+    if (combinedBoundsForFit.length === 0) {
+      return { width: 400, height: 300 };
+    }
+    const maxX = Math.max(...combinedBoundsForFit.map((i) => i.x + i.w));
+    const maxY = Math.max(...combinedBoundsForFit.map((i) => i.y + i.h));
+    return { width: maxX, height: maxY };
+  }, [combinedBoundsForFit]);
 
   const validDropTableNumbers = useMemo(() => {
     if (draggingPartySize == null) return null;
@@ -318,16 +293,18 @@ function FloorCanvasInner({
     );
   }
 
-  // Workspace mode: fit-to-canvas, per-element scaled coordinates (no parent transform)
+  // Workspace mode: 1:1 coordinates with single transform wrapper
 
   return (
-    <div ref={containerRef} className="flex min-h-0 w-full flex-1 overflow-auto bg-[var(--bg)]">
+    <div 
+      ref={containerRef} 
+      className="flex min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto bg-[var(--bg)]"
+      style={{ maxWidth: "70vw" }}
+    >
       <Panel
         variant="floor"
-        className="relative min-h-0 flex-1"
+        className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
         style={{
-          width: fit ? Math.max(containerSize.width || 0, boundsWidth * scale) : (containerSize.width || "100%"),
-          height: fit ? Math.max(containerSize.height || 0, boundsHeight * scale) : (containerSize.height || "100%"),
           boxShadow: "var(--shadow)"
         }}
       >
@@ -340,179 +317,200 @@ function FloorCanvasInner({
           }}
           aria-hidden
         />
-        {/* Floor labels: visual-only landmarks – use Tile primitive */}
-        {labelsRender.map((label) => (
-          <div
-            key={label.id}
-            className="pointer-events-none absolute flex items-center justify-center"
-            style={{
-              left: label.renderX,
-              top: label.renderY,
-              width: label.renderW,
-              height: label.renderH
-            }}
-          >
-            <div
-              className="flex h-full w-full items-center justify-center"
-              style={{
-                transform: label.rotDeg ? `rotate(${label.rotDeg}deg)` : undefined,
-                transformOrigin: "center center"
-              }}
-            >
-              <div style={{ fontSize: "max(0.6rem, 9px)" }}>
-                <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none">
-                  {label.text}
-                </Tile>
-              </div>
-            </div>
-          </div>
-        ))}
-        {tablesRender.map((item) => {
-          const table = tableByNumber.get(item.tableNumber) ?? null;
-          const isInCombo = table?.inComboId != null;
-          const isSelected = selectedTableNumbers.has(item.tableNumber);
-          const isDropTargetValid =
-            validDropTableNumbers != null && validDropTableNumbers.has(item.tableNumber);
-          const isDropTargetInvalid =
-            draggingPartySize != null &&
-            table &&
-            (isInCombo ||
-              (table.baseCapacity ?? table.capacity) + (table.capacityOverride ?? 0) <
-                draggingPartySize ||
-              table.status === TableStatus.OCCUPIED);
-          const isCompact = Math.min(item.renderW, item.renderH) < 56;
-
-          return (
-            <div
-              key={item.tableNumber}
-              className={`absolute flex items-center justify-center rounded-none ${
-                isSelected ? "ring-2 ring-[var(--primary-action)] ring-offset-1 ring-offset-[var(--panel)]" : ""
-              }`}
-              style={{
-                left: item.renderX,
-                top: item.renderY,
-                width: item.renderW,
-                height: item.renderH,
-                opacity: isInCombo ? 0.5 : 1
-              }}
-              onClick={(e) => {
-                if (e.shiftKey) {
-                  e.stopPropagation();
-                  onToggleTableSelection?.(item.tableNumber);
-                }
-              }}
-              onDragOver={handleDragOver}
-              onDrop={(e) => !isInCombo && handleDrop(e, item.tableNumber)}
-            >
+        {/* Single wrapper with transform - contains all tables/labels at 1:1 coordinates */}
+        <div
+          className="absolute"
+          style={{
+            width: `${canvasSize.width}px`,
+            height: `${canvasSize.height}px`,
+            transform: `translate(${transformTranslateX}px, ${transformTranslateY}px) scale(${transformScale})`,
+            transformOrigin: "0 0"
+          }}
+        >
+          {/* Floor labels: visual-only landmarks – use Tile primitive */}
+          {safeLabels.map((label) => {
+            const rotDeg = label.rotDeg ?? 0;
+            return (
               <div
-                className="h-full w-full rounded-sm"
+                key={label.id}
+                className="pointer-events-none absolute flex items-center justify-center"
                 style={{
-                  margin: TABLE_GAP_RENDER_PX,
-                  boxShadow: "var(--table-tile-shadow)",
-                  transform: item.rotDeg ? `rotate(${item.rotDeg}deg)` : undefined,
-                  transformOrigin: "center center"
+                  left: label.x,
+                  top: label.y,
+                  width: label.w,
+                  height: label.h
                 }}
               >
-                <TableTile
-                  table={table}
-                  tableNumber={item.tableNumber}
-                  seats={item.seats}
-                  workspaceId={workspaceId}
-                  parties={parties}
-                  compact={isCompact}
-                  isDropTargetValid={!!isDropTargetValid}
-                  isDropTargetInvalid={!!isDropTargetInvalid}
-                  inFlightTableNumber={inFlightTableNumbers[item.tableNumber]}
-                  markTableTurningFormAction={markTableTurningFormAction}
-                  clearTableFormAction={clearTableFormAction}
-                  bumpExpectedFreeAtFormAction={bumpExpectedFreeAtFormAction}
-                  markTableTurningAction={markTableTurningAction}
-                  addMinutesToTableAction={addMinutesToTableAction}
-                  onClearTable={onClearTable}
-                  onMarkTurning={onMarkTurning}
-                  onAddMinutes={onAddMinutes}
-                  addChairAction={addChairAction}
-                  removeChairAction={removeChairAction}
-                  showToast={showToast}
-                  onClearSuccess={onClearSuccess}
-                  nowMs={nowMs}
-                />
+                <div
+                  className="flex h-full w-full items-center justify-center"
+                  style={{
+                    transform: rotDeg ? `rotate(${rotDeg}deg)` : undefined,
+                    transformOrigin: "center center"
+                  }}
+                >
+                  <div style={{ fontSize: "max(0.6rem, 9px)" }}>
+                    <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none">
+                      {label.text}
+                    </Tile>
+                  </div>
+                </div>
               </div>
-            </div>
-          );
-        })}
-        {combos.map((combo) => {
-          const members = combo.tableNumbers
-            .map((tn) => templateTables.find((t) => t.tableNumber === tn))
-            .filter(Boolean) as Array<{ x: number; y: number; w: number; h: number }>;
-          if (members.length === 0) return null;
-          const minX = Math.min(...members.map((m) => m.x));
-          const minY = Math.min(...members.map((m) => m.y));
-          const maxX = Math.max(...members.map((m) => m.x + m.w));
-          const maxY = Math.max(...members.map((m) => m.y + m.h));
-          const padding = 12;
-          const comboW = maxX - minX + padding * 2;
-          const comboH = maxY - minY + padding * 2;
-          const comboX = minX - padding;
-          const comboY = minY - padding;
-          const renderX = (comboX - minX) * scale + offsetX;
-          const renderY = (comboY - minY) * scale + offsetY;
-          const renderW = comboW * scale;
-          const renderH = comboH * scale;
-          const isComboDropValid =
-            draggingPartySize != null &&
-            combo.mergedCapacity >= draggingPartySize &&
-            (combo.status === "FREE" || combo.status === "TURNING");
-          const isComboDropInvalid =
-            draggingPartySize != null &&
-            (combo.mergedCapacity < draggingPartySize || combo.status === "OCCUPIED");
-          const handleDropCombo = (e: React.DragEvent) => {
-            e.preventDefault();
-            const raw = e.dataTransfer.getData(DRAG_TYPE);
-            if (!raw || !onSeatPartyAtCombo) return;
-            try {
-              const { partyId, partyName, partySize } = JSON.parse(raw);
-              if (partyId && partyName != null && Number.isFinite(partySize)) {
-                onSeatPartyAtCombo(partyId, partyName, partySize, combo.id);
+            );
+          })}
+          {/* Tables: 1:1 coordinates matching builder */}
+          {templateTables.map((item) => {
+            const table = tableByNumber.get(item.tableNumber) ?? null;
+            const isInCombo = table?.inComboId != null;
+            const isSelected = selectedTableNumbers.has(item.tableNumber);
+            const isDropTargetValid =
+              validDropTableNumbers != null && validDropTableNumbers.has(item.tableNumber);
+            const isDropTargetInvalid =
+              draggingPartySize != null &&
+              table &&
+              (isInCombo ||
+                (table.baseCapacity ?? table.capacity) + (table.capacityOverride ?? 0) <
+                  draggingPartySize ||
+                table.status === TableStatus.OCCUPIED);
+            const rotDeg = item.rotDeg ?? 0;
+            // Calculate if compact based on scaled size
+            const scaledW = item.w * transformScale;
+            const scaledH = item.h * transformScale;
+            const isCompact = Math.min(scaledW, scaledH) < 56;
+
+            return (
+              <div
+                key={item.tableNumber}
+                className={`absolute flex items-center justify-center rounded-none ${
+                  isSelected ? "ring-2 ring-[var(--primary-action)] ring-offset-1 ring-offset-[var(--panel)]" : ""
+                }`}
+                style={{
+                  left: item.x,
+                  top: item.y,
+                  width: item.w,
+                  height: item.h,
+                  opacity: isInCombo ? 0.5 : 1
+                }}
+                onClick={(e) => {
+                  if (e.shiftKey) {
+                    e.stopPropagation();
+                    onToggleTableSelection?.(item.tableNumber);
+                  }
+                }}
+                onDragOver={handleDragOver}
+                onDrop={(e) => !isInCombo && handleDrop(e, item.tableNumber)}
+              >
+                <div
+                  className="h-full w-full rounded-sm"
+                  style={{
+                    margin: TABLE_GAP_RENDER_PX,
+                    boxShadow: "var(--table-tile-shadow)",
+                    transform: rotDeg ? `rotate(${rotDeg}deg)` : undefined,
+                    transformOrigin: "center center"
+                  }}
+                >
+                  <TableTile
+                    table={table}
+                    tableNumber={item.tableNumber}
+                    seats={item.seats}
+                    workspaceId={workspaceId}
+                    parties={parties}
+                    compact={isCompact}
+                    isDropTargetValid={!!isDropTargetValid}
+                    isDropTargetInvalid={!!isDropTargetInvalid}
+                    inFlightTableNumber={inFlightTableNumbers[item.tableNumber]}
+                    markTableTurningFormAction={markTableTurningFormAction}
+                    clearTableFormAction={clearTableFormAction}
+                    bumpExpectedFreeAtFormAction={bumpExpectedFreeAtFormAction}
+                    markTableTurningAction={markTableTurningAction}
+                    addMinutesToTableAction={addMinutesToTableAction}
+                    onClearTable={onClearTable}
+                    onMarkTurning={onMarkTurning}
+                    onAddMinutes={onAddMinutes}
+                    addChairAction={addChairAction}
+                    removeChairAction={removeChairAction}
+                    showToast={showToast}
+                    onClearSuccess={onClearSuccess}
+                    nowMs={nowMs}
+                  />
+                </div>
+              </div>
+            );
+          })}
+          {/* Combos: 1:1 coordinates */}
+          {combos.map((combo) => {
+            const members = combo.tableNumbers
+              .map((tn) => templateTables.find((t) => t.tableNumber === tn))
+              .filter(Boolean) as Array<{ x: number; y: number; w: number; h: number }>;
+            if (members.length === 0) return null;
+            const minX = Math.min(...members.map((m) => m.x));
+            const minY = Math.min(...members.map((m) => m.y));
+            const maxX = Math.max(...members.map((m) => m.x + m.w));
+            const maxY = Math.max(...members.map((m) => m.y + m.h));
+            const padding = 12;
+            const comboW = maxX - minX + padding * 2;
+            const comboH = maxY - minY + padding * 2;
+            const comboX = minX - padding;
+            const comboY = minY - padding;
+            const isComboDropValid =
+              draggingPartySize != null &&
+              combo.mergedCapacity >= draggingPartySize &&
+              (combo.status === "FREE" || combo.status === "TURNING");
+            const isComboDropInvalid =
+              draggingPartySize != null &&
+              (combo.mergedCapacity < draggingPartySize || combo.status === "OCCUPIED");
+            const handleDropCombo = (e: React.DragEvent) => {
+              e.preventDefault();
+              const raw = e.dataTransfer.getData(DRAG_TYPE);
+              if (!raw || !onSeatPartyAtCombo) return;
+              try {
+                const { partyId, partyName, partySize } = JSON.parse(raw);
+                if (partyId && partyName != null && Number.isFinite(partySize)) {
+                  onSeatPartyAtCombo(partyId, partyName, partySize, combo.id);
+                }
+              } catch {
+                // ignore
               }
-            } catch {
-              // ignore
-            }
-          };
-          const isComboOverdue =
-            combo.status === "OCCUPIED" &&
-            combo.expectedFreeAt != null &&
-            nowMs >= (combo.expectedFreeAt instanceof Date ? combo.expectedFreeAt.getTime() : new Date(combo.expectedFreeAt).getTime());
-          const comboColor =
-            combo.status === "FREE"
-              ? "table-free"
-              : combo.status === "TURNING"
-                ? "table-turning table-overdue"
-                : combo.status === "OCCUPIED" && isComboOverdue
+            };
+            const isComboOverdue =
+              combo.status === "OCCUPIED" &&
+              combo.expectedFreeAt != null &&
+              nowMs >= (combo.expectedFreeAt instanceof Date ? combo.expectedFreeAt.getTime() : new Date(combo.expectedFreeAt).getTime());
+            const comboColor =
+              combo.status === "FREE"
+                ? "table-free"
+                : combo.status === "TURNING"
                   ? "table-turning table-overdue"
-                  : "table-occupied";
-          return (
-            <div
-              key={combo.id}
-              role="button"
-              tabIndex={0}
-              className={`absolute flex cursor-pointer items-center justify-center rounded-lg border ${isComboDropValid ? "ring-2 ring-[var(--primary-action)] ring-offset-2 ring-offset-[var(--panel)]" : ""} ${isComboDropInvalid ? "opacity-60" : ""} ${comboColor}`}
-              style={{ left: renderX, top: renderY, width: renderW, height: renderH }}
-              onDragOver={handleDragOver}
-              onDrop={handleDropCombo}
-              onClick={() => onComboClick?.(combo)}
-              onKeyDown={(e) => e.key === "Enter" && onComboClick?.(combo)}
-            >
-              <div className="flex flex-col items-center justify-center px-2 py-1 text-center">
-                <span className="table-number text-[var(--text)]">{combo.tableNumbers.join("+")}</span>
-                <span className="mt-0.5 meta-text rounded-sm bg-white/60 px-2 py-0.5 text-[var(--muted)]">
-                  {combo.mergedCapacity} seats
-                </span>
-                <span className="mt-0.5 text-[0.6rem] text-[var(--muted)]">merged</span>
+                  : combo.status === "OCCUPIED" && isComboOverdue
+                    ? "table-turning table-overdue"
+                    : "table-occupied";
+            return (
+              <div
+                key={combo.id}
+                role="button"
+                tabIndex={0}
+                className={`absolute flex cursor-pointer items-center justify-center rounded-lg border ${isComboDropValid ? "ring-2 ring-[var(--primary-action)] ring-offset-2 ring-offset-[var(--panel)]" : ""} ${isComboDropInvalid ? "opacity-60" : ""} ${comboColor}`}
+                style={{ 
+                  left: comboX, 
+                  top: comboY, 
+                  width: comboW, 
+                  height: comboH 
+                }}
+                onDragOver={handleDragOver}
+                onDrop={handleDropCombo}
+                onClick={() => onComboClick?.(combo)}
+                onKeyDown={(e) => e.key === "Enter" && onComboClick?.(combo)}
+              >
+                <div className="flex flex-col items-center justify-center px-2 py-1 text-center">
+                  <span className="table-number text-[var(--text)]">{combo.tableNumbers.join("+")}</span>
+                  <span className="mt-0.5 meta-text rounded-sm bg-white/60 px-2 py-0.5 text-[var(--muted)]">
+                    {combo.mergedCapacity} seats
+                  </span>
+                  <span className="mt-0.5 text-[0.6rem] text-[var(--muted)]">merged</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </Panel>
     </div>
   );
