@@ -7,6 +7,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        brown: {
+          50: "#faf8f5",
+          100: "#f5f0e8",
+          200: "#e8ddd4",
+          300: "#d4c4b0",
+          400: "#b8a082",
+          500: "#9c7c5a",
+          600: "#7d5f3f",
+          700: "#5d4530",
+          800: "#3e2f20",
+          900: "#1f1810"
+        },
         tabit: {
           bg: "#f4f5f7",
           panel: "#ffffff",

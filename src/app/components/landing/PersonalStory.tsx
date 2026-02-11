@@ -8,18 +8,18 @@ export function PersonalStory() {
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section id="how-it-works" ref={ref} className="py-24 px-4">
+    <section id="how-it-works" ref={ref} className="py-24 px-4 bg-white">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] as const }}
         className="max-w-4xl mx-auto"
       >
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 md:p-10">
-          <h2 className="text-2xl font-semibold text-white mb-6">
+        <div className="rounded-2xl border border-brown-200 bg-amber-50 p-8 md:p-10 shadow-sm">
+          <h2 className="text-2xl font-semibold text-brown-900 mb-6">
             Why we built TableFlow
           </h2>
-          <div className="space-y-4 text-zinc-300 leading-relaxed">
+          <div className="space-y-4 text-brown-700 leading-relaxed">
             <p>
               After years working in restaurants, we saw the same problem everywhere: hosts juggling paper waitlists, managers guessing at table availability, and guests waiting longer than they should. The tools that existed were either too expensive, too complicated, or didn&apos;t match how restaurants actually work.
             </p>
@@ -29,7 +29,7 @@ export function PersonalStory() {
             <p>
               We built TableFlow to be the tool we wish we had when we were managing the floor. It&apos;s designed for speed: drag a party onto a table to seat them, mark tables as turning with one click, see who&apos;s next in line at a glance. No training required, no expensive hardware—just open it in a browser and start using it.
             </p>
-            <p className="font-medium text-white pt-2">
+            <p className="font-medium text-brown-900 pt-2">
               If you&apos;re running a busy restaurant and want smoother service, fewer walk-outs, and happier guests, TableFlow can help. Try it tonight and see the difference it makes.
             </p>
           </div>
