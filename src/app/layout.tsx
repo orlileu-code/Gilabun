@@ -8,8 +8,8 @@ const themeCss = `:root { ${Object.entries(themeToCssVars())
   .join("; ")} }`;
 
 export const metadata: Metadata = {
-  title: "Gilabun — Waitlist & Tables",
-  description: "Restaurant hostess dashboard"
+  title: "TableFlow — Smart Waitlist & Floor Management",
+  description: "Visual floor map and waitlist dashboard for restaurants. Seat smarter, serve faster."
 };
 
 export default function RootLayout({
@@ -18,16 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>
       <body className="min-h-screen bg-[var(--bg)] text-[var(--text)] antialiased" style={{ fontFamily: "var(--font)" }}>
         <ThemeInjector />
         <FirebaseInit />
-        <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-3 py-4 sm:px-4 sm:py-6">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );
