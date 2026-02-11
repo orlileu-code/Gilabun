@@ -588,7 +588,7 @@ export function WorkspaceServiceView({
 
   return (
     <TimeTickProvider intervalMs={30000}>
-      <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden">
+      <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden overflow-y-auto">
         <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
           <div className="card flex min-h-0 flex-1 flex-col">
             <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">

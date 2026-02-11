@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useEffect, useState, useMemo, memo } from "react";
-import { getCanvasSize, getFitScaleAndOffset, getFitTransform } from "@/lib/floorLayout";
+import { useCallback, useRef, useState, useMemo, memo } from "react";
+import { getCanvasSize } from "@/lib/floorLayout";
 import { TableTile } from "./TableTile";
 import { Panel, Tile } from "@/ui";
 import { TableStatus } from "@/lib/enums";
@@ -133,7 +133,6 @@ function FloorCanvasInner({
   nowMs
 }: FloorCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     // eslint-disable-next-line no-console
     console.count("FloorCanvas render");
@@ -163,32 +162,16 @@ function FloorCanvasInner({
     [templateTables]
   );
 
-  // Workspace: measure container and compute fit transform (single wrapper approach)
-  useEffect(() => {
-    if (mode !== "workspace" || !containerRef.current) return;
-    const el = containerRef.current;
-    const update = () => {
-      setContainerSize({ width: el.clientWidth || 0, height: el.clientHeight || 0 });
-    };
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [mode]);
+  // Workspace: use same canvas size calculation as builder (fixed coordinate system)
+  const workspaceCanvasSize = useMemo(() => {
+    if (mode !== "workspace") return { width: 0, height: 0 };
+    return getCanvasSize(combinedBoundsForFit);
+  }, [mode, combinedBoundsForFit]);
 
-  const fitTransform = useMemo(
-    () =>
-      mode === "workspace" && containerSize.width > 0 && containerSize.height > 0
-        ? getFitTransform(
-            combinedBoundsForFit.length > 0
-              ? combinedBoundsForFit
-              : [{ x: 0, y: 0, w: 400, h: 300 }],
-            containerSize.width,
-            containerSize.height
-          )
-        : null,
-    [mode, containerSize.width, containerSize.height, combinedBoundsForFit]
-  );
+  // Workspace: default scale = 1, no auto-fit (fit button will handle scaling later)
+  const [workspaceScale, setWorkspaceScale] = useState(1);
+  const [workspaceTranslateX, setWorkspaceTranslateX] = useState(0);
+  const [workspaceTranslateY, setWorkspaceTranslateY] = useState(0);
 
   const handleDrop = useCallback(
     (e: React.DragEvent, tableNumber: number) => {
@@ -212,22 +195,7 @@ function FloorCanvasInner({
     e.dataTransfer.dropEffect = "move";
   }, []);
 
-  // Compute workspace mode transform values unconditionally (hooks must be called in same order)
-  const transformScale = fitTransform?.scale ?? 1;
-  const transformTranslateX = fitTransform?.translateX ?? 0;
-  const transformTranslateY = fitTransform?.translateY ?? 0;
-  const boundsWidth = fitTransform?.boundsWidth ?? 0;
-  const boundsHeight = fitTransform?.boundsHeight ?? 0;
-
-  // Calculate canvas size for wrapper (needed for proper bounds)
-  const canvasSize = useMemo(() => {
-    if (combinedBoundsForFit.length === 0) {
-      return { width: 400, height: 300 };
-    }
-    const maxX = Math.max(...combinedBoundsForFit.map((i) => i.x + i.w));
-    const maxY = Math.max(...combinedBoundsForFit.map((i) => i.y + i.h));
-    return { width: maxX, height: maxY };
-  }, [combinedBoundsForFit]);
+  // Workspace mode: use fixed canvas size matching builder, default scale = 1
 
   const validDropTableNumbers = useMemo(() => {
     if (draggingPartySize == null) return null;
@@ -293,18 +261,20 @@ function FloorCanvasInner({
     );
   }
 
-  // Workspace mode: 1:1 coordinates with single transform wrapper
+  // Workspace mode: fixed coordinate system matching builder exactly
 
   return (
     <div 
       ref={containerRef} 
-      className="flex min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto bg-[var(--bg)]"
-      style={{ maxWidth: "70vw" }}
+      className="h-full min-h-[28rem] w-full overflow-x-hidden overflow-y-auto bg-[var(--bg)]"
     >
+      {/* FloorViewport: overflow-x hidden, overflow-y auto */}
       <Panel
         variant="floor"
-        className="relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+        className="relative overflow-x-hidden overflow-y-auto"
         style={{
+          width: "100%",
+          height: "100%",
           boxShadow: "var(--shadow)"
         }}
       >
@@ -317,13 +287,15 @@ function FloorCanvasInner({
           }}
           aria-hidden
         />
-        {/* Single wrapper with transform - contains all tables/labels at 1:1 coordinates */}
+        {/* FloorContent: fixed width/height matching builder, single transform */}
         <div
-          className="absolute"
+          className="relative"
           style={{
-            width: `${canvasSize.width}px`,
-            height: `${canvasSize.height}px`,
-            transform: `translate(${transformTranslateX}px, ${transformTranslateY}px) scale(${transformScale})`,
+            width: `${workspaceCanvasSize.width}px`,
+            height: `${workspaceCanvasSize.height}px`,
+            minWidth: `${workspaceCanvasSize.width}px`,
+            minHeight: `${workspaceCanvasSize.height}px`,
+            transform: `translate(${workspaceTranslateX}px, ${workspaceTranslateY}px) scale(${workspaceScale})`,
             transformOrigin: "0 0"
           }}
         >
@@ -372,9 +344,9 @@ function FloorCanvasInner({
                   draggingPartySize ||
                 table.status === TableStatus.OCCUPIED);
             const rotDeg = item.rotDeg ?? 0;
-            // Calculate if compact based on scaled size
-            const scaledW = item.w * transformScale;
-            const scaledH = item.h * transformScale;
+            // Calculate if compact based on actual size (scale applied via transform)
+            const scaledW = item.w * workspaceScale;
+            const scaledH = item.h * workspaceScale;
             const isCompact = Math.min(scaledW, scaledH) < 56;
 
             return (
