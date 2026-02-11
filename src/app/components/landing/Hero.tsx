@@ -78,7 +78,7 @@ export function Hero() {
           <Button
             size="lg"
             className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full px-8 h-12 text-base font-medium shadow-lg shadow-brown-900/25 border border-brown-800/30"
-            href="/app"
+            href="/login"
           >
             Start Using TableFlow
             <ArrowRight className="ml-2 w-4 h-4" />
@@ -87,7 +87,7 @@ export function Hero() {
             variant="outline"
             size="lg"
             className="rounded-full px-8 h-12 text-base font-medium border-brown-300 text-brown-700 hover:bg-brown-50 hover:text-brown-900 hover:border-brown-400 bg-white"
-            href="/app"
+            href="/login"
           >
             View Demo
           </Button>

@@ -1,16 +1,12 @@
 import { redirect } from "next/navigation";
 import { getUserId } from "@/lib/firebase/auth-server";
 
-export default async function AppLayout({
+export default async function WorkspaceLayout({
   children
 }: {
   children: React.ReactNode;
 }) {
   const userId = await getUserId();
   if (!userId) redirect("/login");
-  return (
-    <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-3 py-4 sm:px-4 sm:py-6">
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

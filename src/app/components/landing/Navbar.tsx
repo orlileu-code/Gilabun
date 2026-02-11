@@ -61,10 +61,10 @@ export function Navbar() {
 
         {/* CTA Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" href="/app">
+          <Button variant="ghost" size="sm" href="/login">
             Sign In
           </Button>
-          <Button size="sm" className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full px-4" href="/app">
+          <Button size="sm" className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full px-4" href="/login">
             Get Started
           </Button>
         </div>
@@ -99,10 +99,10 @@ export function Navbar() {
               </a>
             ))}
             <hr className="border-brown-200 my-2" />
-            <Button variant="ghost" className="justify-start text-brown-700 hover:text-brown-900" href="/app">
+            <Button variant="ghost" className="justify-start text-brown-700 hover:text-brown-900" href="/login">
               Sign In
             </Button>
-            <Button className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full" href="/app">
+            <Button className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full" href="/login">
               Get Started
             </Button>
           </div>

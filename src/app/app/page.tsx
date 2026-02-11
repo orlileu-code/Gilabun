@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { TopBar } from "../components/TopBar";
 import {
   listWorkspaces,
@@ -6,18 +7,20 @@ import {
   deleteWorkspaceFormAction
 } from "../workspaceActions";
 import { getTemplates } from "../templateActions";
-import { getUserId } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
 import { StartNewWorkspaceForm } from "../components/StartNewWorkspaceForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function AppHomePage() {
+  const userId = await getUserId();
+  if (!userId) redirect("/login");
+
   let workspaces: Awaited<ReturnType<typeof listWorkspaces>> = [];
   let templates: Awaited<ReturnType<typeof getTemplates>> = [];
   let loadError: string | null = null;
 
   try {
-    const userId = getUserId();
     [workspaces, templates] = await Promise.all([
       listWorkspaces(userId),
       getTemplates(userId)

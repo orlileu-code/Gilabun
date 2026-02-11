@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Panel, Header, Badge } from "@/ui";
 
 /** Renders time + date only after mount to avoid server/client format mismatch (hydration error). */
@@ -20,6 +21,14 @@ type TopBarProps = {
 };
 
 export function TopBar({ waitingCount }: TopBarProps) {
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await fetch("/api/auth/session", { method: "DELETE" });
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
     <Panel variant="page" as="header" className="mb-3 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:mb-4 sm:px-6 border-b border-[var(--floor-border)]">
       <div className="flex items-baseline gap-3">
@@ -30,9 +39,18 @@ export function TopBar({ waitingCount }: TopBarProps) {
           </Badge>
         )}
       </div>
-      <Header variant="page" as="h1" className="tracking-tight">
-        Gilabun
-      </Header>
+      <div className="flex items-center gap-3">
+        <Header variant="page" as="h1" className="tracking-tight">
+          TableFlow
+        </Header>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className="btn-ghost text-sm"
+        >
+          Sign out
+        </button>
+      </div>
     </Panel>
   );
 }

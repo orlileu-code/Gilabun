@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { getUserId } from "@/lib/firebase/admin";
+import { redirect } from "next/navigation";
+import { getUserId } from "@/lib/firebase/auth-server";
 import { getTemplates, setActiveTemplateFormAction } from "../templateActions";
 import { TopBar } from "../components/TopBar";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChooseTemplatePage() {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) redirect("/login");
   const templates = await getTemplates(userId);
 
   return (

@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { getUserId } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
 import { getWorkspaceWithData } from "../../workspaceActions";
 import { getEarliestAvailableTimeForWorkspaceTables } from "@/lib/waitEstimate";
 import { PartyStatus } from "@/lib/enums";
@@ -24,7 +24,8 @@ export default async function WorkspaceDashboardPage({
   params: Promise<{ workspaceId: string }>;
 }) {
   const { workspaceId } = await params;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) redirect("/login");
   const workspace = await getWorkspaceWithData(userId, workspaceId);
   if (!workspace) notFound();
 

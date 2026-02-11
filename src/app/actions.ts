@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getUserId, getAdminFirestore } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
+import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   partiesCol,
   tableStatesCol,
@@ -84,7 +85,8 @@ export async function addPartyToWorkspaceAction(
     return { ok: false, error: "Name is required and size must be at least 1." };
   }
 
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { ok: false, error: "Please sign in." };
   const tableStatesSnap = await tableStatesCol(userId, workspaceId).get();
   const tableStatesList: WorkspaceTableLike[] = tableStatesSnap.docs.map((d) => {
     const t = d.data() as {
@@ -149,7 +151,8 @@ export async function createPartyInWorkspace(
   if (!trimmedName) return { error: "Name is required." };
   if (!Number.isFinite(size) || size < 1) return { error: "Size must be at least 1." };
 
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const tableStatesSnap = await tableStatesCol(userId, workspaceId).get();
   const tableStatesList: WorkspaceTableLike[] = tableStatesSnap.docs.map((d) => {
     const t = d.data() as {
@@ -216,7 +219,8 @@ export async function getNextSeatingForWorkspace(workspaceId: string): Promise<{
   tableLabel: string;
   minutesUntil: number;
 } | null> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return null;
   const now = new Date();
 
   const waitingSnap = await partiesCol(userId, workspaceId)
@@ -299,7 +303,8 @@ export async function autoAssignNextPartyAction(
 
   const next = await getNextSeatingForWorkspace(workspaceId);
   if (!next) {
-    const userId = getUserId();
+    const userId = await getUserId();
+    if (!userId) return { status: "ERROR", message: "Please sign in.", mode: "FCFS", targetSize: null };
     const waitingSnap = await partiesCol(userId, workspaceId)
       .where("status", "==", PartyStatus.WAITING)
       .limit(1)
@@ -368,7 +373,8 @@ export async function suggestTableForPartyAction(
   if (!partyId || !workspaceId) {
     return { status: "ERROR", message: "Party and workspace required." };
   }
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { status: "ERROR", message: "Please sign in." };
   const partySnap = await partiesCol(userId, workspaceId).doc(partyId).get();
   if (!partySnap.exists) {
     return { status: "ERROR", message: "Party not found." };
@@ -455,7 +461,8 @@ export async function seatPartyAtTable(
   partyId: string,
   tableNumber: number
 ): Promise<{ error?: string; tableState?: TableStatePayload; party?: PartyPayload }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const tableStateRef = tableStatesCol(userId, workspaceId).doc(String(tableNumber));
 
@@ -547,7 +554,8 @@ export async function seatPartyAtCombo(
   partyId: string,
   comboId: string
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const partyRef = partiesCol(userId, workspaceId).doc(partyId);
   const comboRef = workspaceCombosCol(userId, workspaceId).doc(comboId);
@@ -618,7 +626,8 @@ export async function setPartyStatusWorkspaceAction(formData: FormData) {
   const status = asPartyStatus(statusRaw);
   if (!partyId || !status) return;
 
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return;
   await partiesCol(userId, workspaceId).doc(partyId).update({ status });
   revalidatePath("/");
   if (workspaceId) revalidatePath(`/workspace/${workspaceId}`);
@@ -630,7 +639,8 @@ export async function markTableTurningAction(
   tableNumber: number,
   turningMinutes: number = 15
 ): Promise<{ error?: string; tableState?: TableStatePayload }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const now = new Date();
   const docId = String(tableNumber);
@@ -745,7 +755,8 @@ export async function clearTableAction(
   workspaceId: string,
   tableNumber: number
 ): Promise<{ error?: string; tableState?: TableStatePayload }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const now = new Date();
   const docId = String(tableNumber);
@@ -812,7 +823,8 @@ export async function addMinutesToTableAction(
   tableNumber: number,
   minutesToAdd: number = 10
 ): Promise<{ error?: string; tableState?: TableStatePayload }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const now = new Date();
   const docId = String(tableNumber);
@@ -892,7 +904,8 @@ export async function bumpWorkspaceExpectedFreeAtFormAction(formData: FormData) 
 }
 
 export async function kitchenSlowAllWorkspaceAction(workspaceId: string) {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return;
   const snapshot = await tableStatesCol(userId, workspaceId).get();
   const now = new Date();
   for (const doc of snapshot.docs) {

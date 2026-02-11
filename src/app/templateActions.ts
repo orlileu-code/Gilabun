@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getUserId } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
 import {
   templatesCol,
   templateDoc,
@@ -24,7 +24,8 @@ export type CreateTemplateResult =
 export async function createTemplate(formData: FormData): Promise<CreateTemplateResult> {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { error: "Template name is required." };
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const col = templatesCol(userId);
   const snapshot = await col.orderBy("updatedAt", "desc").limit(1).get();
   const isDefault = snapshot.empty;
@@ -92,7 +93,8 @@ export async function updateTemplateLogo(
   templateId: string,
   formData: FormData
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const ref = templateDoc(userId, templateId);
   const snap = await ref.get();
   if (!snap.exists) return { error: "Template not found." };
@@ -121,7 +123,8 @@ export async function updateTemplateLogo(
 }
 
 export async function removeTemplateLogo(templateId: string): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const ref = templateDoc(userId, templateId);
   const snap = await ref.get();
   if (!snap.exists) return { error: "Template not found." };
@@ -143,7 +146,8 @@ export async function removeTemplateLogo(templateId: string): Promise<{ error?: 
 export async function renameTemplate(templateId: string, name: string) {
   const trimmed = name.trim();
   if (!trimmed) return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   await templateDoc(userId, templateId).update({
     name: trimmed,
     updatedAt: new Date()
@@ -153,7 +157,8 @@ export async function renameTemplate(templateId: string, name: string) {
 }
 
 export async function setActiveTemplate(templateId: string) {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const db = getAdminFirestore();
   const snapshot = await templatesCol(userId).get();
   const batch = db.batch();
@@ -188,7 +193,8 @@ export async function createTemplateTable(
     return { error: "Seats must be at least 1." };
   }
 
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const tablesSnap = await templateTablesCol(userId, templateId).get();
   const exists = tablesSnap.docs.some(
     (d) => (d.data() as { tableNumber: number }).tableNumber === tableNumber
@@ -228,7 +234,8 @@ export async function updateTemplateTablePosition(
   y: number
 ) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   await templateTablesCol(userId, templateId).doc(id).update({
     x: Math.round(x),
     y: Math.round(y),
@@ -254,7 +261,8 @@ export async function updateTemplateTableSize(
     h < 40
   )
     return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   await templateTablesCol(userId, templateId).doc(id).update({
     x: Math.round(x),
     y: Math.round(y),
@@ -272,7 +280,8 @@ export async function updateTemplateTableRotation(
 ) {
   const deg = Math.round(rotDeg) % 360;
   const normalized = deg < 0 ? deg + 360 : deg;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   await templateTablesCol(userId, templateId).doc(id).update({
     rotDeg: normalized,
     updatedAt: new Date()
@@ -285,7 +294,8 @@ export async function updateTemplateTable(
   id: string,
   data: { tableNumber?: number; seats?: number }
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const ref = templateTablesCol(userId, templateId).doc(id);
   const snap = await ref.get();
   if (!snap.exists) return { error: "Table not found." };
@@ -317,7 +327,8 @@ export async function updateTemplateTable(
 }
 
 export async function deleteTemplateTable(templateId: string, id: string) {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateTablesCol(userId, templateId).doc(id).delete();
   } catch (err) {
@@ -355,7 +366,8 @@ export async function createTemplateLabel(
   const sizeKey = String(formData.get("size") ?? "medium").trim().toLowerCase();
   if (!text) return { error: "Label text is required." };
 
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const { w, h } = LABEL_SIZES[sizeKey] ?? LABEL_SIZES.medium;
   const now = new Date();
 
@@ -386,7 +398,8 @@ export async function updateTemplateLabelPosition(
   y: number
 ) {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateLabelsCol(userId, templateId).doc(id).update({
       x: Math.round(x),
@@ -417,7 +430,8 @@ export async function updateTemplateLabelSize(
     h < 20
   )
     return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateLabelsCol(userId, templateId).doc(id).update({
       x: Math.round(x),
@@ -440,7 +454,8 @@ export async function updateTemplateLabelRotation(
 ) {
   const deg = Math.round(rotDeg) % 360;
   const normalized = deg < 0 ? deg + 360 : deg;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateLabelsCol(userId, templateId).doc(id).update({
       rotDeg: normalized,
@@ -460,7 +475,8 @@ export async function updateTemplateLabelText(
 ): Promise<{ error?: string }> {
   const trimmed = text.trim().toUpperCase();
   if (!trimmed) return { error: "Label text is required." };
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateLabelsCol(userId, templateId).doc(id).update({
       text: trimmed,
@@ -475,7 +491,8 @@ export async function updateTemplateLabelText(
 }
 
 export async function deleteTemplateLabel(templateId: string, id: string) {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   try {
     await templateLabelsCol(userId, templateId).doc(id).delete();
   } catch (err) {

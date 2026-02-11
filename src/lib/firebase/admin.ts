@@ -32,7 +32,4 @@ export function getAdminFirestore() {
   return getFirestore();
 }
 
-/** Current user id for server actions. Use "demo" when no auth, or verify ID token later. */
-export function getUserId(): string {
-  return process.env.FIREBASE_DEMO_USER_ID || "demo";
-}
+// getUserId is now async and lives in auth-server.ts – use: import { getUserId } from "@/lib/firebase/auth-server"

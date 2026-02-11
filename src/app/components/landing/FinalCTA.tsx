@@ -29,7 +29,7 @@ export function FinalCTA() {
           <Button
             size="lg"
             className="shimmer-btn bg-brown-700 text-white hover:bg-brown-800 rounded-full px-8 h-14 text-base font-medium shadow-lg shadow-brown-900/20"
-            href="/app"
+            href="/login"
           >
             Get Started for Free
             <ArrowRight className="ml-2 w-5 h-5" />
@@ -38,7 +38,7 @@ export function FinalCTA() {
             variant="outline"
             size="lg"
             className="rounded-full px-8 h-14 text-base font-medium border-brown-300 text-brown-700 hover:bg-white hover:text-brown-900 hover:border-brown-400 bg-transparent"
-            href="/app"
+            href="/login"
           >
             Try Demo
           </Button>

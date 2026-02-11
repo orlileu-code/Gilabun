@@ -40,7 +40,7 @@ Templates persist until deleted. Workspaces are service sessions; creating a new
 
    - `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID` from the client config.
    - `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY` from the service account JSON. For the private key, paste the full key including `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----`; use real newlines or `\n` (escape in `.env` as needed).
-   - Optional: `FIREBASE_DEMO_USER_ID=demo` so all data is stored under `/users/demo/` when not using Firebase Auth. Remove this when you add Auth and use the signed-in user's uid.
+   - Each user's data is isolated under `/users/{uid}/`. Sign in with Google is required.
    - For template logos: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` from [Cloudinary Dashboard](https://console.cloudinary.com/) → Settings → API Keys.
 
 7. **Deploy Firestore rules** so only the signed-in user can access their data:
@@ -49,7 +49,9 @@ Templates persist until deleted. Workspaces are service sessions; creating a new
    firebase deploy --only firestore:rules
    ```
 
-   Or in Firebase Console → Firestore → Rules, paste the contents of `firestore.rules` (only allow read/write under `/users/{userId}/` when `request.auth.uid == userId`). When using `FIREBASE_DEMO_USER_ID`, you may use test mode temporarily or create a Firestore rule that allows the demo user.
+   Or in Firebase Console → Firestore → Rules, paste the contents of `firestore.rules` (only allow read/write under `/users/{userId}/` when `request.auth.uid == userId`).
+
+8. **Enable Google sign-in**: Firebase Console → Authentication → Sign-in method → Enable Google.
 
 ### How to run
 
@@ -73,7 +75,9 @@ Templates persist until deleted. Workspaces are service sessions; creating a new
 
 ### Routes
 
-- **/** — Home: recent workspaces, start new workspace (choose template), list templates.
+- **/** — Landing page.
+- **/login** — Sign in with Google (required before using the app).
+- **/app** — Dashboard: recent workspaces, start new workspace (choose template), list templates.
 - **/choose-template** — List templates; Use (set active) or Edit (builder).
 - **/choose-template/new** — Create a new template (name), then redirects to choose-template.
 - **/builder/[templateId]** — Template builder: drag, resize, rotate tables; add/edit/delete tables; start service with this template.
@@ -82,8 +86,8 @@ Templates persist until deleted. Workspaces are service sessions; creating a new
 ### Security
 
 - All writes go through server actions using the **Firebase Admin SDK** (never expose admin keys to the client).
-- Firestore Security Rules restrict access to `/users/{userId}/` so that only `request.auth.uid == userId` can read/write. When using `FIREBASE_DEMO_USER_ID` without Auth, use test mode or a rule that allows your demo user for development.
-- To add multi-user support, implement Firebase Auth (e.g. email/password or email link), verify the ID token in server actions, and use the decoded `uid` instead of `FIREBASE_DEMO_USER_ID`.
+- **Firebase Auth (Google sign-in)** is required. Each user gets their own data under `/users/{uid}/` – no shared templates or workspaces.
+- Firestore Security Rules restrict access to `/users/{userId}/` so that only `request.auth.uid == userId` can read/write.
 
 ### Notes
 

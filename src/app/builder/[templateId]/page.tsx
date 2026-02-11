@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { getUserId } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
 import { getTemplateWithTables } from "../../templateActions";
 import { TopBar } from "../../components/TopBar";
 import { BuilderView } from "../../components/BuilderView";
@@ -12,7 +12,8 @@ type Props = { params: Promise<{ templateId: string }> };
 
 export default async function BuilderPage({ params }: Props) {
   const { templateId } = await params;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) redirect("/login");
   const template = await getTemplateWithTables(userId, templateId);
   if (!template) notFound();
 

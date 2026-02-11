@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getUserId, getAdminFirestore } from "@/lib/firebase/admin";
+import { getUserId } from "@/lib/firebase/auth-server";
+import { getAdminFirestore } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import {
   templatesCol,
@@ -56,7 +57,8 @@ export async function createWorkspaceFromTemplate(
   templateId: string,
   name?: string
 ): Promise<{ workspaceId?: string; error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const templateSnap = await templateDoc(userId, templateId).get();
   if (!templateSnap.exists) return { error: "Template not found." };
   const templateData = templateSnap.data() as { name: string; logoUrl?: string | null };
@@ -108,7 +110,8 @@ export async function createWorkspaceFromTemplate(
 }
 
 export async function setActiveWorkspace(workspaceId: string) {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return;
   const snapshot = await workspacesCol(userId).get();
   const db = getAdminFirestore();
   const batch = db.batch();
@@ -124,7 +127,8 @@ export async function setActiveWorkspace(workspaceId: string) {
 }
 
 export async function resetWorkspace(workspaceId: string): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const workspaceRef = workspaceDoc(userId, workspaceId);
   const workspaceSnap = await workspaceRef.get();
   if (!workspaceSnap.exists) return { error: "Workspace not found." };
@@ -152,7 +156,8 @@ export async function duplicateWorkspace(workspaceId: string): Promise<{
   workspaceId?: string;
   error?: string;
 }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const workspaceSnap = await workspaceDoc(userId, workspaceId).get();
   if (!workspaceSnap.exists) return { error: "Workspace not found." };
   const wData = workspaceSnap.data() as {
@@ -194,7 +199,8 @@ export async function duplicateWorkspace(workspaceId: string): Promise<{
 }
 
 export async function deleteWorkspace(workspaceId: string): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   await workspaceDoc(userId, workspaceId).delete();
   revalidatePath("/");
   return {};
@@ -203,7 +209,11 @@ export async function deleteWorkspace(workspaceId: string): Promise<{ error?: st
 export async function duplicateWorkspaceFormAction(formData: FormData) {
   const workspaceId = String(formData.get("workspaceId") ?? "").trim();
   if (!workspaceId) return;
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) {
+    redirect("/login");
+    return;
+  }
   const result = await duplicateWorkspace(workspaceId);
   if (result.workspaceId) redirect(`/workspace/${result.workspaceId}`);
 }
@@ -436,7 +446,8 @@ export async function createCombo(
   tableNumbers: number[]
 ): Promise<{ error?: string; comboId?: string }> {
   if (tableNumbers.length < 2) return { error: "Select at least 2 tables to merge." };
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const sorted = [...tableNumbers].sort((a, b) => a - b);
   const db = getAdminFirestore();
   try {
@@ -481,7 +492,8 @@ export async function deleteCombo(
   workspaceId: string,
   comboId: string
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const comboRef = workspaceCombosCol(userId, workspaceId).doc(comboId);
   const comboSnap = await comboRef.get();
   if (!comboSnap.exists) return { error: "Combo not found." };
@@ -508,7 +520,8 @@ export async function addChair(
   workspaceId: string,
   tableNumber: number
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const ref = tableStatesCol(userId, workspaceId).doc(String(tableNumber));
   try {
     await getAdminFirestore().runTransaction(async (tx) => {
@@ -531,7 +544,8 @@ export async function removeChair(
   workspaceId: string,
   tableNumber: number
 ): Promise<{ error?: string }> {
-  const userId = getUserId();
+  const userId = await getUserId();
+  if (!userId) return { error: "Please sign in." };
   const ref = tableStatesCol(userId, workspaceId).doc(String(tableNumber));
   try {
     await getAdminFirestore().runTransaction(async (tx) => {
