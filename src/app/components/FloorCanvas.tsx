@@ -8,6 +8,8 @@ import { TableStatus } from "@/lib/enums";
 import type { WorkspaceParty, WorkspaceCombo } from "./WorkspaceServiceView";
 
 const DRAG_TYPE = "application/x-gilabun-party";
+/** Visual gap between tables in workspace mode (render pixels) so tables don't touch. */
+const TABLE_GAP_RENDER_PX = 4;
 
 export type TemplateTable = {
   tableNumber: number;
@@ -317,10 +319,10 @@ function FloorCanvasInner({
   // Workspace mode: fit-to-canvas, per-element scaled coordinates (no parent transform)
 
   return (
-    <div ref={containerRef} className="h-full min-h-[28rem] w-full overflow-hidden bg-[var(--bg)]">
+    <div ref={containerRef} className="flex min-h-0 w-full flex-1 overflow-hidden bg-[var(--bg)]">
       <Panel
         variant="floor"
-        className="relative h-full w-full"
+        className="relative h-full w-full min-h-0 flex-1"
         style={{
           width: containerSize.width || "100%",
           height: containerSize.height || "100%",
@@ -391,6 +393,7 @@ function FloorCanvasInner({
               <div
                 className="h-full w-full"
                 style={{
+                  margin: TABLE_GAP_RENDER_PX,
                   transform: item.rotDeg ? `rotate(${item.rotDeg}deg)` : undefined,
                   transformOrigin: "center center"
                 }}

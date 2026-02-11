@@ -109,7 +109,7 @@ function FloorMapInner({
     [layout]
   );
   return (
-    <Panel variant="floor" className="flex min-h-[28rem] w-full overflow-hidden rounded-none" style={{ boxShadow: "var(--shadow)" }}>
+    <Panel variant="floor" className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-none" style={{ boxShadow: "var(--shadow)" }}>
       <FloorCanvas
         templateTables={templateTables}
         templateLabels={labels}

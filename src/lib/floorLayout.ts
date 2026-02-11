@@ -60,7 +60,8 @@ export function getTemplateBounds(
   };
 }
 
-export const FIT_SCALE_MIN = 0.5;
+/** Allow strong zoom-out so floor always fits in viewport — host never has to scroll. */
+export const FIT_SCALE_MIN = 0.15;
 export const FIT_SCALE_MAX = 2.5;
 export const FIT_PADDING_PX = 24;
 

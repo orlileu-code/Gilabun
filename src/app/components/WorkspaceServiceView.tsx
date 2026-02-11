@@ -588,10 +588,10 @@ export function WorkspaceServiceView({
 
   return (
     <TimeTickProvider intervalMs={30000}>
-      <main className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section className="min-w-0">
-          <div className="card h-full">
-            <div className="card-header flex flex-wrap items-start justify-between gap-2">
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className="flex min-h-0 min-w-0 flex-col">
+          <div className="card flex min-h-0 flex-1 flex-col">
+            <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="card-title">Floor</div>
                 <p className="mt-1 meta-text text-[var(--muted)]">
@@ -617,7 +617,7 @@ export function WorkspaceServiceView({
                 </span>
               </div>
             </div>
-            <div className="card-body">
+            <div className="card-body flex min-h-0 flex-1 flex-col overflow-hidden">
               {layout.length === 0 ? (
                 <p className="meta-text text-[var(--muted)]">This template has no tables.</p>
               ) : (
