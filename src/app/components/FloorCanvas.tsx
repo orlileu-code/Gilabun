@@ -265,7 +265,7 @@ function FloorCanvasInner({
   return (
     <div 
       ref={containerRef} 
-      className="relative h-full w-full overflow-x-hidden bg-[var(--bg)]"
+      className="relative w-full overflow-x-hidden bg-[var(--bg)]"
       style={{
         boxShadow: "var(--shadow)"
       }}
