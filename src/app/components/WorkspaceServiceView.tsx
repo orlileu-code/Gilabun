@@ -588,12 +588,12 @@ export function WorkspaceServiceView({
 
   return (
     <TimeTickProvider intervalMs={30000}>
-      {/* ContentRow: flex: 1, min-height: 0, display: flex */}
+      {/* Main content area: flex: 1, min-height: 0, display: flex, gap: 16px, overflow-x: hidden */}
       <main className="flex min-h-0 flex-1 flex-row gap-4 overflow-x-hidden px-4">
-        {/* FloorPanel: flex: 1, min-width: 0, display: flex, flex-direction: column, min-height: 0 */}
+        {/* Left panel (Floor): flex: 1, min-width: 0, min-height: 0, display: flex, flex-direction: column */}
         <section className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="card flex min-h-0 flex-1 flex-col">
-            {/* FloorTopBar: no scroll */}
+            {/* Floor header / controls: fixed at top, no scroll */}
             <div className="card-header flex shrink-0 flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="card-title">Floor</div>
@@ -660,8 +660,8 @@ export function WorkspaceServiceView({
           </div>
         </section>
 
-        {/* WaitlistPanel: width: 380px, flex: 0 0 380px, overflow-y: auto */}
-        <Panel variant="waitlist" as="section" className="flex w-[380px] flex-shrink-0 flex-col overflow-y-auto rounded-none">
+        {/* Right panel (Waitlist): width: 380px, flex: 0 0 380px, min-height: 0, overflow-y: auto */}
+        <Panel variant="waitlist" as="section" className="flex min-h-0 w-[380px] flex-shrink-0 flex-col overflow-y-auto rounded-none">
           <div className="flex flex-1 flex-col min-h-0 min-w-0 rounded-none">
             <div className="shrink-0 border-b border-[var(--waitlist-border)] px-2.5 py-2">
               <div className="flex items-center gap-2">

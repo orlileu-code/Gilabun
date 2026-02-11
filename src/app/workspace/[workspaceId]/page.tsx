@@ -69,7 +69,7 @@ export default async function WorkspaceDashboardPage({
   const combos = workspace.combos ?? [];
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-screen flex-col overflow-x-hidden">
       <TopBar waitingCount={allWaitingCount} />
       <div className="mb-2 flex shrink-0 items-center justify-between px-4">
         <h1 className="text-lg font-semibold text-[var(--text)]">{workspace.name}</h1>

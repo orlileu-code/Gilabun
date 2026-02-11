@@ -262,20 +262,14 @@ function FloorCanvasInner({
   }
 
   // Workspace mode: fixed coordinate system matching builder exactly
-
   return (
     <div 
       ref={containerRef} 
-      className="h-full w-full bg-[var(--bg)]"
+      className="relative h-full w-full overflow-x-hidden bg-[var(--bg)]"
+      style={{
+        boxShadow: "var(--shadow)"
+      }}
     >
-      {/* FloorViewport: overflow-x hidden, overflow-y auto */}
-      <Panel
-        variant="floor"
-        className="relative h-full w-full overflow-x-hidden overflow-y-auto"
-        style={{
-          boxShadow: "var(--shadow)"
-        }}
-      >
         {/* Subtle grid so floor reads like the builder canvas */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -481,8 +475,7 @@ function FloorCanvasInner({
             );
           })}
         </div>
-      </Panel>
-    </div>
+      </div>
   );
 }
 
