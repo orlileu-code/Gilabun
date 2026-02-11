@@ -56,6 +56,8 @@ type TableTileProps = {
   onClearSuccess?: () => void;
   /** Current time snapshot (ms) for consistent “overdue” calculations. */
   nowMs: number;
+  /** When true, use minimal layout (number + capacity + status only) for small tiles to avoid truncation. */
+  compact?: boolean;
 };
 
 function isOccupiedOverdue(table: Table, nowMs: number): boolean {
@@ -108,7 +110,8 @@ function TableTileInner({
   removeChairAction,
   showToast,
   onClearSuccess,
-  nowMs
+  nowMs,
+  compact = false
 }: TableTileProps) {
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     // eslint-disable-next-line no-console
@@ -141,9 +144,9 @@ function TableTileInner({
     <>
       <Tile
         variant={getTileVariant(table, nowMs)}
-        rounded="none"
-        padding="md"
-        className={`w-full text-xs ${dropRingClass}`}
+        rounded="sm"
+        padding={compact ? "sm" : "md"}
+        className={`w-full min-w-0 overflow-hidden text-xs ${dropRingClass}`}
         onClick={() => table && setShowPanel(true)}
         role={table ? "button" : undefined}
         title={
@@ -156,16 +159,38 @@ function TableTileInner({
               : undefined
         }
       >
-        <div className="flex shrink-0 items-center justify-between gap-1">
-          <span className="table-number text-[16px]">{tableNumber}</span>
-          <Badge variant="seats">{capacity}</Badge>
-        </div>
-        <div className="mt-1 flex shrink-0 flex-wrap items-center gap-1">
-          <Badge variant={statusBadgeVariant}>{!table ? "—" : table.status}</Badge>
-          {!isPlaceholder && table.status === TableStatus.FREE && (
-            <span className="meta-text text-[0.65rem]">Available</span>
-          )}
-        </div>
+        {compact ? (
+          <div className="flex min-w-0 flex-col gap-0.5 overflow-hidden">
+            <div className="flex min-w-0 items-center justify-between gap-0.5">
+              <span className="truncate text-[12px] font-bold leading-tight" style={{ minWidth: 0 }}>
+                {tableNumber}
+              </span>
+              <Badge variant="seats" className="shrink-0 text-[10px]">
+                {capacity}
+              </Badge>
+            </div>
+            <div className="min-w-0 overflow-hidden">
+              <span className="block truncate text-[10px] font-medium">
+                {!table ? "—" : table.status}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex min-w-0 shrink-0 items-center justify-between gap-1 overflow-hidden">
+              <span className="table-number truncate text-[16px]" style={{ minWidth: 0 }}>
+                {tableNumber}
+              </span>
+              <Badge variant="seats" className="shrink-0">{capacity}</Badge>
+            </div>
+            <div className="mt-1 flex min-w-0 shrink-0 flex-wrap items-center gap-1 overflow-hidden">
+              <Badge variant={statusBadgeVariant}>{!table ? "—" : table.status}</Badge>
+              {!isPlaceholder && table.status === TableStatus.FREE && (
+                <span className="meta-text truncate text-[0.65rem]">Available</span>
+              )}
+            </div>
+          </>
+        )}
       </Tile>
 
       {table && workspaceId && showPanel && (
@@ -216,6 +241,7 @@ function tableTilePropsEqual(prev: TableTileProps, next: TableTileProps): boolea
     prev.tableNumber !== next.tableNumber ||
     prev.seats !== next.seats ||
     prev.workspaceId !== next.workspaceId ||
+    prev.compact !== next.compact ||
     prev.isDropTargetValid !== next.isDropTargetValid ||
     prev.isDropTargetInvalid !== next.isDropTargetInvalid ||
     prev.inFlightTableNumber !== next.inFlightTableNumber

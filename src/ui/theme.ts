@@ -110,6 +110,8 @@ export const radii = {
 export const shadow = {
   sm: "0 1px 2px rgba(0, 0, 0, 0.06)",
   md: "0 2px 4px rgba(0, 0, 0, 0.08)",
+  /** Slight lift for table tiles on the floor so they read as distinct from the background. */
+  tableTile: "0 1px 3px rgba(0, 0, 0, 0.07)",
 } as const;
 
 export const fontFamily =
@@ -157,6 +159,7 @@ export function themeToCssVars(): Record<string, string> {
     "--radius": radii.md,
     "--radius-sm": radii.sm,
     "--shadow": shadow.sm,
+    "--table-tile-shadow": shadow.tableTile,
     "--font": fontFamily,
   };
 }

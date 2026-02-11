@@ -65,9 +65,13 @@ export const FIT_SCALE_MIN = 0.15;
 export const FIT_SCALE_MAX = 2.5;
 export const FIT_PADDING_PX = 24;
 
+/** Smallest table dimension (px) we allow when scaling; below this tables become unreadable. */
+export const MIN_TABLE_RENDER_PX = 40;
+
 /**
  * Compute uniform scale and offset to fit template bounds in container (workspace mode).
- * Does not modify saved coordinates; used only for rendering.
+ * Ensures no table is drawn smaller than MIN_TABLE_RENDER_PX on its shorter side; if the
+ * container is too small for that, scale may exceed fit and the floor will scroll.
  */
 export function getFitScaleAndOffset(
   items: Array<{ x: number; y: number; w: number; h: number }>,
@@ -88,7 +92,17 @@ export function getFitScaleAndOffset(
   const availableH = Math.max(0, containerHeight - 2 * padding);
   let scale = 1;
   if (bounds.width > 0 && bounds.height > 0 && availableW > 0 && availableH > 0) {
-    scale = Math.min(availableW / bounds.width, availableH / bounds.height);
+    const fitScale = Math.min(availableW / bounds.width, availableH / bounds.height);
+    let minReadableScale = FIT_SCALE_MIN;
+    if (items.length > 0) {
+      const smallestTableDimension = Math.min(
+        ...items.map((i) => Math.min(i.w, i.h))
+      );
+      if (smallestTableDimension > 0) {
+        minReadableScale = MIN_TABLE_RENDER_PX / smallestTableDimension;
+      }
+    }
+    scale = Math.max(fitScale, minReadableScale);
     scale = Math.max(FIT_SCALE_MIN, Math.min(FIT_SCALE_MAX, scale));
   }
   const scaledW = bounds.width * scale;

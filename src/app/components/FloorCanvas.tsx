@@ -218,6 +218,8 @@ function FloorCanvasInner({
   const offsetY = fit?.offsetY ?? 0;
   const minX = fit?.minX ?? 0;
   const minY = fit?.minY ?? 0;
+  const boundsWidth = fit?.boundsWidth ?? 0;
+  const boundsHeight = fit?.boundsHeight ?? 0;
 
   // All hooks must be called before any early returns
   const labelsRender = useMemo(
@@ -319,16 +321,25 @@ function FloorCanvasInner({
   // Workspace mode: fit-to-canvas, per-element scaled coordinates (no parent transform)
 
   return (
-    <div ref={containerRef} className="flex min-h-0 w-full flex-1 overflow-hidden bg-[var(--bg)]">
+    <div ref={containerRef} className="flex min-h-0 w-full flex-1 overflow-auto bg-[var(--bg)]">
       <Panel
         variant="floor"
-        className="relative h-full w-full min-h-0 flex-1"
+        className="relative min-h-0 flex-1"
         style={{
-          width: containerSize.width || "100%",
-          height: containerSize.height || "100%",
+          width: fit ? Math.max(containerSize.width || 0, boundsWidth * scale) : (containerSize.width || "100%"),
+          height: fit ? Math.max(containerSize.height || 0, boundsHeight * scale) : (containerSize.height || "100%"),
           boxShadow: "var(--shadow)"
         }}
       >
+        {/* Subtle grid so floor reads like the builder canvas */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px)",
+            backgroundSize: "20px 20px"
+          }}
+          aria-hidden
+        />
         {/* Floor labels: visual-only landmarks – use Tile primitive */}
         {labelsRender.map((label) => (
           <div
@@ -348,7 +359,7 @@ function FloorCanvasInner({
                 transformOrigin: "center center"
               }}
             >
-              <Tile variant="label" padding="sm" className="h-full w-full text-center text-[0.6rem] font-medium uppercase tracking-wide shadow-none">
+              <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none" style={{ fontSize: "max(0.6rem, 9px)" }}>
                 {label.text}
               </Tile>
             </div>
@@ -367,6 +378,7 @@ function FloorCanvasInner({
               (table.baseCapacity ?? table.capacity) + (table.capacityOverride ?? 0) <
                 draggingPartySize ||
               table.status === TableStatus.OCCUPIED);
+          const isCompact = Math.min(item.renderW, item.renderH) < 56;
 
           return (
             <div
@@ -391,9 +403,10 @@ function FloorCanvasInner({
               onDrop={(e) => !isInCombo && handleDrop(e, item.tableNumber)}
             >
               <div
-                className="h-full w-full"
+                className="h-full w-full rounded-sm"
                 style={{
                   margin: TABLE_GAP_RENDER_PX,
+                  boxShadow: "var(--table-tile-shadow)",
                   transform: item.rotDeg ? `rotate(${item.rotDeg}deg)` : undefined,
                   transformOrigin: "center center"
                 }}
@@ -404,6 +417,7 @@ function FloorCanvasInner({
                   seats={item.seats}
                   workspaceId={workspaceId}
                   parties={parties}
+                  compact={isCompact}
                   isDropTargetValid={!!isDropTargetValid}
                   isDropTargetInvalid={!!isDropTargetInvalid}
                   inFlightTableNumber={inFlightTableNumbers[item.tableNumber]}
