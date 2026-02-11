@@ -7,15 +7,15 @@
  */
 
 export const colors = {
-  // Page & panels – black / white / brown (no yellow tint)
-  pageBg: "#FAFAFA",
-  panelLight: "#F5F5F5",
+  // Page & panels – light brown tint
+  pageBg: "#F7F4F0",
+  panelLight: "#EDE7E0",
   panelDark: "#2C2419",
   panelWhite: "#ffffff",
-  panelWhiteMuted: "#F5F5F5",
+  panelWhiteMuted: "#EDE7E0",
 
-  // Borders (neutral gray)
-  border: "#E5E5E5",
+  // Borders (light brown)
+  border: "#E0D6CC",
   borderDark: "#3D362D",
 
   // Right panel (waitlist)
@@ -49,7 +49,7 @@ export const colors = {
   // Structural labels (Restroom, Bar, Kitchen)
   labelText: "#6B6358",
   labelBg: "rgba(0, 0, 0, 0.02)",
-  labelBorder: "#E5E5E5",
+  labelBorder: "#E0D6CC",
 
   // Primary action – chocolate brown (no amber)
   accentBlue: "#4A3528",

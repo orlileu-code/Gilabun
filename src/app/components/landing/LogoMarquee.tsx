@@ -19,7 +19,7 @@ export function LogoMarquee() {
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section ref={ref} className="py-16 overflow-hidden bg-white">
+    <section ref={ref} className="py-16 overflow-hidden bg-brown-100">
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
@@ -33,8 +33,8 @@ export function LogoMarquee() {
 
       <div className="relative">
         {/* Fade masks */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-brown-100 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-brown-100 to-transparent z-10 pointer-events-none" />
 
         {/* Marquee container */}
         <div className="flex animate-marquee">

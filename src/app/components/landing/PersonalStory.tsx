@@ -8,7 +8,7 @@ export function PersonalStory() {
   const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section id="how-it-works" ref={ref} className="py-24 px-4 bg-white">
+    <section id="how-it-works" ref={ref} className="py-24 px-4 bg-brown-50">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}

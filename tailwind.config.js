@@ -7,17 +7,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Brown: 50–300 = neutral grays (no yellow/cream); 400–900 = chocolate brown
+        // Brown: 50–300 = light brown/tan; 400–900 = chocolate brown
         brown: {
-          50: "#FAFAFA",
-          100: "#F5F5F5",
-          200: "#E5E5E5",
-          300: "#D4D4D4",
-          400: "#5C4033",
-          500: "#4A3528",
-          600: "#3D2C22",
-          700: "#332619",
-          800: "#2D2119",
+          50: "#F7F4F0",
+          100: "#EDE7E0",
+          200: "#E0D6CC",
+          300: "#C9B8A8",
+          400: "#8B6F47",
+          500: "#6B5344",
+          600: "#5C4033",
+          700: "#4A3528",
+          800: "#3D2C22",
           900: "#1A1814",
         },
         tabit: {
