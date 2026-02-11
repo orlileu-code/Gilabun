@@ -359,9 +359,11 @@ function FloorCanvasInner({
                 transformOrigin: "center center"
               }}
             >
-              <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none" style={{ fontSize: "max(0.6rem, 9px)" }}>
-                {label.text}
-              </Tile>
+              <div style={{ fontSize: "max(0.6rem, 9px)" }}>
+                <Tile variant="label" padding="sm" className="h-full w-full text-center font-medium uppercase tracking-wide shadow-none">
+                  {label.text}
+                </Tile>
+              </div>
             </div>
           </div>
         ))}
