@@ -11,6 +11,18 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 5; // 5 days
 
 export async function POST(request: NextRequest) {
   try {
+    const clientProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const adminProjectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
+    if (clientProjectId && adminProjectId && clientProjectId !== adminProjectId) {
+      return NextResponse.json(
+        {
+          error: "Failed to create session",
+          details: "Firebase project mismatch: client and admin must use the same project. Check NEXT_PUBLIC_FIREBASE_PROJECT_ID and FIREBASE_ADMIN_PROJECT_ID in .env.local",
+        },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const idToken = body?.idToken?.toString();
     if (!idToken) {
@@ -20,9 +32,8 @@ export async function POST(request: NextRequest) {
       );
     }
     const auth = getAuth(getAdminApp());
-    await auth.verifyIdToken(idToken);
     const sessionCookie = await auth.createSessionCookie(idToken, {
-      expiresIn: SESSION_MAX_AGE * 1000
+      expiresIn: SESSION_MAX_AGE * 1000,
     });
     const res = NextResponse.json({ status: "success" });
     res.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
