@@ -74,7 +74,7 @@ export function BentoGrid() {
                 <div key={status} className="text-center p-3 rounded-lg bg-white border border-brown-200">
                   <div className={`text-lg font-bold mb-1 ${
                     status === "FREE" ? "text-emerald-600" : 
-                    status === "OCCUPIED" ? "text-brown-600" : 
+                    status === "OCCUPIED" ? "text-orange-600" : 
                     "text-red-600"
                   }`}>
                     {status}
