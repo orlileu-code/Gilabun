@@ -27,6 +27,15 @@ const firebaseAuthPkgBrowserPath = path.resolve(
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.svgrepo.com",
+        pathname: "/**",
+      },
+    ],
+  },
   experimental: {
     serverComponentsExternalPackages: ["firebase", "firebase-admin", "@firebase/auth", "undici"],
   },
