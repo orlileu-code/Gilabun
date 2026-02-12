@@ -43,6 +43,12 @@ export function TopBar({ waitingCount }: TopBarProps) {
         <Header variant="page" as="h1" className="tracking-tight">
           TableFlow
         </Header>
+        <a
+          href="/app/dashboard"
+          className="btn-ghost text-sm"
+        >
+          Dashboard
+        </a>
         <button
           type="button"
           onClick={handleSignOut}

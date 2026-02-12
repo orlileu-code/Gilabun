@@ -56,11 +56,19 @@ export default async function AppHomePage() {
     <>
       <TopBar />
       <main className="flex flex-1 flex-col gap-8">
-        <div>
-          <h1 className="text-xl font-semibold text-[var(--text)]">Service Sessions</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Start a new TableFlow workspace for tonight&apos;s service, or open an existing one.
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-[var(--text)]">Service Sessions</h1>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              Start a new TableFlow workspace for tonight&apos;s service, or open an existing one.
+            </p>
+          </div>
+          <Link
+            href="/app/dashboard"
+            className="btn-primary text-sm"
+          >
+            Dashboard
+          </Link>
         </div>
 
         {/* Recent Workspaces */}
