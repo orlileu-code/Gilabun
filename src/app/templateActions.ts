@@ -158,7 +158,10 @@ export async function renameTemplate(templateId: string, name: string) {
 
 export async function setActiveTemplate(templateId: string) {
   const userId = await getUserId();
-  if (!userId) return { error: "Please sign in." };
+  if (!userId) {
+    redirect("/login");
+    return;
+  }
   const db = getAdminFirestore();
   const snapshot = await templatesCol(userId).get();
   const batch = db.batch();

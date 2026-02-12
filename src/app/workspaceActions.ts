@@ -58,7 +58,10 @@ export async function createWorkspaceFromTemplate(
   name?: string
 ): Promise<{ workspaceId?: string; error?: string }> {
   const userId = await getUserId();
-  if (!userId) return { error: "Please sign in." };
+  if (!userId) {
+    redirect("/login");
+    return { error: "Please sign in." };
+  }
   const templateSnap = await templateDoc(userId, templateId).get();
   if (!templateSnap.exists) return { error: "Template not found." };
   const templateData = templateSnap.data() as { name: string; logoUrl?: string | null };
