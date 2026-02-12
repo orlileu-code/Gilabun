@@ -9,46 +9,166 @@ import { getAdminApp } from "@/lib/firebase/admin";
 const SESSION_COOKIE_NAME = "session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 5; // 5 days
 
+/**
+ * Map Firebase error codes to user-friendly error messages and suggestions.
+ */
+function getFirebaseErrorMessage(error: unknown): {
+  error: string;
+  details: string;
+  suggestion?: string;
+} {
+  const errorCode = (error as any)?.code;
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+  // Firebase Admin SDK error codes
+  switch (errorCode) {
+    case "auth/invalid-credential":
+      return {
+        error: "Invalid Firebase Admin credentials",
+        details: "The Firebase Admin SDK credentials are invalid or malformed.",
+        suggestion:
+          "Check FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY in .env.local. Ensure the private key includes BEGIN/END markers and newlines are properly escaped.",
+      };
+    case "auth/invalid-id-token":
+      return {
+        error: "Invalid ID token",
+        details: "The provided ID token is invalid or expired.",
+        suggestion: "Please try signing in again. If the problem persists, clear your browser cache and try again.",
+      };
+    case "auth/id-token-expired":
+      return {
+        error: "Sign-in expired",
+        details: "Your sign-in session has expired.",
+        suggestion: "Please try signing in again.",
+      };
+    case "auth/project-not-found":
+      return {
+        error: "Firebase project not found",
+        details: `The Firebase project "${process.env.FIREBASE_ADMIN_PROJECT_ID}" was not found.`,
+        suggestion:
+          "Verify FIREBASE_ADMIN_PROJECT_ID matches your Firebase project ID in Firebase Console.",
+      };
+    case "auth/insufficient-permission":
+      return {
+        error: "Insufficient permissions",
+        details: "The service account doesn't have permission to create session cookies.",
+        suggestion:
+          "Ensure your Firebase service account has the 'Firebase Admin SDK Administrator Service Agent' role in Google Cloud Console.",
+      };
+  }
+
+  // Check for common error message patterns
+  if (errorMessage.includes("Missing") || errorMessage.includes("missing")) {
+    return {
+      error: "Missing Firebase Admin configuration",
+      details: errorMessage,
+      suggestion:
+        "Check that FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY are all set in .env.local",
+    };
+  }
+
+  if (errorMessage.includes("private key") || errorMessage.includes("credential")) {
+    return {
+      error: "Firebase Admin credential error",
+      details: errorMessage,
+      suggestion:
+        "Verify FIREBASE_ADMIN_PRIVATE_KEY format in .env.local. It should include -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----- markers.",
+    };
+  }
+
+  // Generic error
+  return {
+    error: "Failed to create session",
+    details: errorMessage,
+    suggestion:
+      process.env.NODE_ENV === "development"
+        ? "Check the server console for detailed error logs. Visit /api/auth/debug for configuration diagnostics."
+        : "Please try again. If the problem persists, contact support.",
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // Validate project IDs match
     const clientProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const adminProjectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     if (clientProjectId && adminProjectId && clientProjectId !== adminProjectId) {
       return NextResponse.json(
         {
-          error: "Failed to create session",
-          details: "Firebase project mismatch: client and admin must use the same project. Check NEXT_PUBLIC_FIREBASE_PROJECT_ID and FIREBASE_ADMIN_PROJECT_ID in .env.local",
+          error: "Firebase project mismatch",
+          details:
+            "Client and Admin SDK must use the same Firebase project.",
+          suggestion:
+            "Ensure NEXT_PUBLIC_FIREBASE_PROJECT_ID and FIREBASE_ADMIN_PROJECT_ID match in .env.local",
         },
         { status: 500 }
       );
     }
 
+    // Validate Admin SDK initialization early
+    let adminApp;
+    try {
+      adminApp = getAdminApp();
+    } catch (initError) {
+      console.error("[session] Firebase Admin SDK initialization failed:", initError);
+      const errorInfo = getFirebaseErrorMessage(initError);
+      return NextResponse.json(
+        {
+          error: errorInfo.error,
+          details: errorInfo.details,
+          suggestion: errorInfo.suggestion,
+        },
+        { status: 500 }
+      );
+    }
+
+    // Parse request body
     const body = await request.json();
     const idToken = body?.idToken?.toString();
     if (!idToken) {
       return NextResponse.json(
-        { error: "Missing idToken" },
+        { error: "Missing idToken", details: "No ID token provided in request." },
         { status: 400 }
       );
     }
-    const auth = getAuth(getAdminApp());
+
+    // Basic token format validation (JWT has 3 parts separated by dots)
+    const tokenParts = idToken.split(".");
+    if (tokenParts.length !== 3) {
+      return NextResponse.json(
+        {
+          error: "Invalid token format",
+          details: "The ID token format is invalid.",
+          suggestion: "Please try signing in again.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create session cookie
+    const auth = getAuth(adminApp);
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE * 1000,
     });
+
     const res = NextResponse.json({ status: "success" });
     res.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
       maxAge: SESSION_MAX_AGE,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      path: "/"
+      path: "/",
     });
     return res;
   } catch (e) {
     console.error("[session] Failed to create session:", e);
-    const msg = e instanceof Error ? e.message : "Unknown error";
+    const errorInfo = getFirebaseErrorMessage(e);
     return NextResponse.json(
-      { error: "Failed to create session", details: process.env.NODE_ENV === "development" ? msg : undefined },
+      {
+        error: errorInfo.error,
+        details: errorInfo.details,
+        suggestion: errorInfo.suggestion,
+      },
       { status: 401 }
     );
   }

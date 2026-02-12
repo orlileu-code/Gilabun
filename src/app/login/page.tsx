@@ -5,30 +5,49 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithGoogle } from "@/lib/firebase/auth-client";
 
+type ErrorResponse = {
+  error: string;
+  details?: string;
+  suggestion?: string;
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [errorSuggestion, setErrorSuggestion] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   async function handleGoogleSignIn() {
     setError(null);
+    setErrorDetails(null);
+    setErrorSuggestion(null);
     setLoading(true);
     try {
       const idToken = await signInWithGoogle();
       const res = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken })
+        body: JSON.stringify({ idToken }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        const msg = data.details ? `${data.error}: ${data.details}` : (data.error || "Sign in failed");
-        throw new Error(msg);
+        const data: ErrorResponse = await res.json().catch(() => ({}));
+        setError(data.error || "Sign in failed");
+        if (data.details) {
+          setErrorDetails(data.details);
+        }
+        if (data.suggestion) {
+          setErrorSuggestion(data.suggestion);
+        }
+        return;
       }
       router.push("/app");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Sign in failed");
+      const message = e instanceof Error ? e.message : "Sign in failed";
+      setError(message);
+      setErrorDetails("An unexpected error occurred during sign-in.");
     } finally {
       setLoading(false);
     }
@@ -52,7 +71,28 @@ export default function LoginPage() {
           {loading ? "Signing in…" : "Sign in with Google"}
         </button>
         {error && (
-          <p className="text-center text-sm text-[var(--red)]">{error}</p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
+            <p className="text-sm font-medium text-red-800">{error}</p>
+            {errorDetails && (
+              <p className="text-xs text-red-700">{errorDetails}</p>
+            )}
+            {errorSuggestion && (
+              <p className="text-xs text-red-600 mt-2">
+                <strong>Fix:</strong> {errorSuggestion}
+              </p>
+            )}
+            {isDevelopment && (
+              <p className="text-xs text-red-600 mt-2">
+                <Link
+                  href="/api/auth/debug"
+                  target="_blank"
+                  className="underline hover:no-underline"
+                >
+                  View configuration diagnostics →
+                </Link>
+              </p>
+            )}
+          </div>
         )}
         <p className="text-center text-xs text-[var(--muted)]">
           <Link href="/" className="hover:underline">
