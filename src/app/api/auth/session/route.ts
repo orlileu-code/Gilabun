@@ -18,7 +18,28 @@ function getFirebaseErrorMessage(error: unknown): {
   suggestion?: string;
 } {
   const errorCode = (error as any)?.code;
-  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  let errorMessage = error instanceof Error ? error.message : "Unknown error";
+  
+  // Check for nested error objects (Google Cloud API responses)
+  const errorObj = error as any;
+  if (errorObj?.response?.data?.error?.message) {
+    errorMessage = errorObj.response.data.error.message;
+  } else if (errorObj?.error?.message) {
+    errorMessage = errorObj.error.message;
+  } else if (typeof error === "string") {
+    errorMessage = error;
+    // Try to parse JSON error messages embedded as strings
+    try {
+      const parsed = JSON.parse(errorMessage);
+      if (parsed?.error?.message) {
+        errorMessage = parsed.error.message;
+      } else if (parsed?.message) {
+        errorMessage = parsed.message;
+      }
+    } catch {
+      // Not JSON, use as-is
+    }
+  }
 
   // Firebase Admin SDK error codes
   switch (errorCode) {
@@ -55,6 +76,24 @@ function getFirebaseErrorMessage(error: unknown): {
         suggestion:
           "Ensure your Firebase service account has the 'Firebase Admin SDK Administrator Service Agent' role in Google Cloud Console.",
       };
+  }
+
+  // Check for Google Cloud IAM permission errors
+  if (
+    errorMessage.includes("PERMISSION_DENIED") ||
+    errorMessage.includes("serviceusage.serviceUsageConsumer") ||
+    errorMessage.includes("serviceusage.services.use") ||
+    errorMessage.includes("Caller does not have required permission")
+  ) {
+    // Extract project ID from error message or use env var
+    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || "your-project";
+    const iamUrl = `https://console.developers.google.com/iam-admin/iam/project?project=${projectId}`;
+    return {
+      error: "Service account missing required permissions",
+      details:
+        "The Firebase service account doesn't have permission to use the Identity Toolkit API.",
+      suggestion: `Grant the service account the "Service Usage Consumer" role (roles/serviceusage.serviceUsageConsumer) in Google Cloud IAM: ${iamUrl}. After granting the role, wait a few minutes for permissions to propagate, then try again.`,
+    };
   }
 
   // Check for common error message patterns
