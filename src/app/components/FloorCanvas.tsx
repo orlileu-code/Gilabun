@@ -269,19 +269,20 @@ function FloorCanvasInner({
   const w = workspaceCanvasSize.width;
   const h = workspaceCanvasSize.height;
   return (
-    <div
-      ref={containerRef}
-      className="relative select-none rounded-lg border border-[var(--floor-border)] bg-[var(--floor-bg)] outline-none"
-      style={{
-        width: `${w}px`,
-        height: `${h}px`,
-        minWidth: `${w}px`,
-        minHeight: `${h}px`,
-        boxShadow: "var(--shadow)",
-        backgroundImage: "linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)",
-        backgroundSize: "12px 12px"
-      }}
-    >
+    <div className="flex justify-center w-full min-w-0">
+      <div
+        ref={containerRef}
+        className="relative select-none rounded-lg border border-[var(--floor-border)] bg-[var(--floor-bg)] outline-none"
+        style={{
+          width: `${w}px`,
+          height: `${h}px`,
+          minWidth: `${w}px`,
+          minHeight: `${h}px`,
+          boxShadow: "var(--shadow)",
+          backgroundImage: "linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)",
+          backgroundSize: "12px 12px"
+        }}
+      >
           {/* Floor labels: identical to BuilderCanvas – border/bg/span structure */}
           {safeLabels.map((label) => {
             const rotDeg = label.rotDeg ?? 0;
@@ -461,6 +462,7 @@ function FloorCanvasInner({
               </div>
             );
           })}
+      </div>
     </div>
   );
 }
