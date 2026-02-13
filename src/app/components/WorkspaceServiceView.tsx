@@ -614,7 +614,10 @@ export function WorkspaceServiceView({
                     decoding="async"
                   />
                 ) : null}
-                <h1 className="card-title">{restaurantName || "Floor"}</h1>
+                <h1 className="text-xl font-bold">
+                  <span className="text-[#4A3528]">Table</span>
+                  <span className="text-[#1A1814]">Flow</span>
+                </h1>
               </div>
               <p className="mt-1 text-xs text-[var(--muted)]">
                 Green = free · orange = occupied · red = turning/overdue · Shift+click tables to merge
