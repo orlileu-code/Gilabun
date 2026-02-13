@@ -4,7 +4,7 @@ import { getUserId } from "@/lib/firebase/auth-server";
 import { getTemplateWithTables } from "../../templateActions";
 import { TopBar } from "../../components/TopBar";
 import { BuilderView } from "../../components/BuilderView";
-import { setActiveTemplateFormAction } from "../../templateActions";
+import { startWorkspaceFromTemplateFormAction } from "../../workspaceActions";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +53,7 @@ export default async function BuilderPage({ params }: Props) {
           logoUrl={template.logoUrl}
           items={items}
           labels={labels}
-          setActiveTemplateFormAction={setActiveTemplateFormAction}
+          startWorkspaceFormAction={startWorkspaceFromTemplateFormAction}
         />
       </main>
     </>

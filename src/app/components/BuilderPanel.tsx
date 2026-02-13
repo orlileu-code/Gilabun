@@ -12,8 +12,7 @@ import {
   updateTemplateLabelRotation,
   deleteTemplateLabel,
   updateTemplateLogo,
-  removeTemplateLogo,
-  setActiveTemplateFormAction
+  removeTemplateLogo
 } from "../templateActions";
 
 const LABEL_SUGGESTIONS = [
@@ -58,7 +57,7 @@ type BuilderPanelProps = {
   selectedLabelId: string | null;
   onClearSelection: () => void;
   onClearLabelSelection: () => void;
-  setActiveTemplateFormAction: (formData: FormData) => Promise<void>;
+  startWorkspaceFormAction: (formData: FormData) => Promise<void>;
 };
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
@@ -75,7 +74,7 @@ export function BuilderPanel({
   selectedLabelId,
   onClearSelection,
   onClearLabelSelection,
-  setActiveTemplateFormAction
+  startWorkspaceFormAction
 }: BuilderPanelProps) {
   const router = useRouter();
   const [createError, setCreateError] = useState<string | null>(null);
@@ -358,7 +357,7 @@ export function BuilderPanel({
           <p className="text-xs text-[var(--muted)]">
             {itemCount} table{itemCount !== 1 ? "s" : ""}, {labels.length} label{labels.length !== 1 ? "s" : ""} in &quot;{templateName}&quot;
           </p>
-          <form action={setActiveTemplateFormAction} className="mt-3 space-y-2">
+          <form action={startWorkspaceFormAction} className="mt-3 space-y-2">
             <input type="hidden" name="templateId" value={templateId} />
             <button type="submit" className="btn-primary w-full">
               Start service with this template

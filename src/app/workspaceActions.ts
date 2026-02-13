@@ -228,6 +228,15 @@ export async function duplicateWorkspaceFormAction(formData: FormData) {
   if (result.workspaceId) redirect(`/workspace/${result.workspaceId}`);
 }
 
+export async function startWorkspaceFromTemplateFormAction(formData: FormData) {
+  const templateId = String(formData.get("templateId") ?? "").trim();
+  if (!templateId) return;
+  const name = String(formData.get("name") ?? "").trim() || undefined;
+  const result = await createWorkspaceFromTemplate(templateId, name);
+  if (result.error) return;
+  if (result.workspaceId) redirect(`/workspace/${result.workspaceId}`);
+}
+
 export async function deleteWorkspaceFormAction(formData: FormData) {
   const workspaceId = String(formData.get("workspaceId") ?? "").trim();
   if (!workspaceId) return;

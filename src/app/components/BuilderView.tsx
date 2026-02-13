@@ -33,7 +33,7 @@ type BuilderViewProps = {
   logoUrl?: string | null;
   items: Item[];
   labels: LabelItem[];
-  setActiveTemplateFormAction: (formData: FormData) => Promise<void>;
+  startWorkspaceFormAction: (formData: FormData) => Promise<void>;
 };
 
 export function BuilderView({
@@ -42,7 +42,7 @@ export function BuilderView({
   logoUrl = null,
   items,
   labels,
-  setActiveTemplateFormAction
+  startWorkspaceFormAction
 }: BuilderViewProps) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export function BuilderView({
           selectedLabelId={selectedLabelId}
           onClearSelection={() => setSelectedId(null)}
           onClearLabelSelection={() => setSelectedLabelId(null)}
-          setActiveTemplateFormAction={setActiveTemplateFormAction}
+          startWorkspaceFormAction={startWorkspaceFormAction}
         />
       </aside>
     </>
