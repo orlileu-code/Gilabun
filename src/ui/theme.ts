@@ -37,9 +37,9 @@ export const colors = {
   tableFreeText: "#2D3D28",
 
   // Table status – OCCUPIED (bright orange)
-  tableOccupiedBg: "#FFEDE0",
-  tableOccupiedBorder: "#EA580C",
-  tableOccupiedText: "#9A3412",
+  tableOccupiedBg: "#FFF4E6",
+  tableOccupiedBorder: "#FF8C00",
+  tableOccupiedText: "#CC5500",
 
   // Table status – TURNING / OVERDUE (red – distinct from Occupied)
   tableTurningBg: "#F2D6D3",
