@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, memo } from "react";
+import { useState, useCallback, useEffect, memo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FloorMap } from "./FloorMap";
 import { AddPartyModal } from "./AddPartyModal";
@@ -134,7 +134,8 @@ const WaitlistRow = memo(function WaitlistRow({
   isDragging,
   workspaceId,
   onDragStart,
-  onDragEnd
+  onDragEnd,
+  onClick
 }: {
   party: WaitingParty;
   isFirst: boolean;
@@ -143,6 +144,7 @@ const WaitlistRow = memo(function WaitlistRow({
   workspaceId: string;
   onDragStart: (e: React.DragEvent, party: WaitingParty) => void;
   onDragEnd: () => void;
+  onClick?: () => void;
 }) {
   const timeStr = formatPartyTime(party.createdAt);
   return (
@@ -150,6 +152,7 @@ const WaitlistRow = memo(function WaitlistRow({
       draggable
       onDragStart={(e) => onDragStart(e, party)}
       onDragEnd={onDragEnd}
+      onClick={onClick}
       className={`flex w-full cursor-grab active:cursor-grabbing items-stretch gap-2 border-0 border-b border-[var(--waitlist-row-border)] border-l-[3px] px-2 py-2 rounded-none ${
         isFirst
           ? "bg-[var(--waitlist-row)] border-l-[var(--waitlist-first)]"
@@ -285,6 +288,7 @@ export function WorkspaceServiceView({
   const [selectedCombo, setSelectedCombo] = useState<WorkspaceCombo | null>(null);
   const [splitLoading, setSplitLoading] = useState(false);
   const [addPartyModalOpen, setAddPartyModalOpen] = useState(false);
+  const [selectedParty, setSelectedParty] = useState<WaitingParty | null>(null);
   const onClearSuccess = useCallback(() => router.refresh(), [router]);
 
   const handlePartyAdded = useCallback((party: WorkspaceParty) => {
@@ -318,6 +322,7 @@ export function WorkspaceServiceView({
     name: string;
     size: number;
   } | null>(null);
+  const isDraggingRef = useRef(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = useCallback((message: string) => {
@@ -571,6 +576,7 @@ export function WorkspaceServiceView({
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, party: WaitingParty) => {
+      isDraggingRef.current = true;
       e.dataTransfer.setData(DRAG_TYPE, JSON.stringify({
         partyId: party.id,
         partyName: party.name,
@@ -583,6 +589,7 @@ export function WorkspaceServiceView({
   );
 
   const handleDragEnd = useCallback(() => {
+    isDraggingRef.current = false;
     setDraggingParty(null);
   }, []);
 
@@ -723,6 +730,12 @@ export function WorkspaceServiceView({
                       workspaceId={workspaceId}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
+                      onClick={() => {
+                        // Don't open modal if we're dragging
+                        if (!isDraggingRef.current) {
+                          setSelectedParty(party);
+                        }
+                      }}
                     />
                   ))}
                 </div>
@@ -785,6 +798,86 @@ export function WorkspaceServiceView({
               <p className="mt-2 meta-text text-[var(--muted)]">
                 Tables {selectedCombo.tableNumbers.join(", ")} will become separate again (FREE).
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Party Details Modal */}
+      {selectedParty && (
+        <div
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 sm:items-center"
+          onClick={() => setSelectedParty(null)}
+          role="dialog"
+          aria-label="Party details"
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl border border-[var(--border)] bg-[var(--panel)] shadow-xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="border-b border-[var(--border)] p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="section-header text-[var(--text)]">
+                  Party Details
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setSelectedParty(null)}
+                  className="rounded p-1 text-[var(--muted)] hover:bg-[var(--panel-2)] hover:text-[var(--text)]"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <span className="text-lg font-semibold text-[var(--text)]">{selectedParty.name}</span>
+                  <Badge variant="waitlist" className="h-6 min-w-[1.75rem] text-[0.75rem]">
+                    {selectedParty.size}
+                  </Badge>
+                </div>
+                {selectedParty.waitingMin > 0 && (
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Waiting {selectedParty.waitingMin} minutes
+                  </p>
+                )}
+                {selectedParty.createdAt && (
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    Added: {formatPartyTime(selectedParty.createdAt)}
+                  </p>
+                )}
+              </div>
+
+              {selectedParty.phone && (
+                <div>
+                  <span className="text-xs font-medium text-[var(--muted)]">Phone:</span>
+                  <p className="mt-0.5 text-sm text-[var(--text)]">
+                    <a
+                      href={`tel:${selectedParty.phone.replace(/\s/g, "")}`}
+                      className="text-[var(--primary-action)] underline decoration-[var(--primary-action)] underline-offset-1 hover:no-underline"
+                    >
+                      {selectedParty.phone}
+                    </a>
+                  </p>
+                </div>
+              )}
+
+              {selectedParty.notes && (
+                <div>
+                  <span className="text-xs font-medium text-[var(--muted)]">Notes:</span>
+                  <div className="mt-1 rounded border border-[var(--border)] bg-[var(--panel-2)] px-2 py-1.5">
+                    <p className="text-sm text-[var(--text)] break-words whitespace-pre-wrap">
+                      {selectedParty.notes}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {!selectedParty.phone && !selectedParty.notes && (
+                <p className="text-sm text-[var(--muted)] italic">No additional information</p>
+              )}
             </div>
           </div>
         </div>
