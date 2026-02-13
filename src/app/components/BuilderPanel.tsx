@@ -359,6 +359,11 @@ export function BuilderPanel({
           </p>
           <form action={startWorkspaceFormAction} className="mt-3 space-y-2">
             <input type="hidden" name="templateId" value={templateId} />
+            <input
+              type="hidden"
+              name="timezone"
+              value={typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : ""}
+            />
             <button type="submit" className="btn-primary w-full">
               Start service with this template
             </button>

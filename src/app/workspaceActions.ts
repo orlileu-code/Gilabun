@@ -230,11 +230,24 @@ export async function duplicateWorkspaceFormAction(formData: FormData) {
 
 export async function startWorkspaceFromTemplateFormAction(formData: FormData) {
   const templateId = String(formData.get("templateId") ?? "").trim();
-  if (!templateId) return;
+  if (!templateId) {
+    redirect("/choose-template");
+    return;
+  }
   const name = String(formData.get("name") ?? "").trim() || undefined;
-  const result = await createWorkspaceFromTemplate(templateId, name);
-  if (result.error) return;
-  if (result.workspaceId) redirect(`/workspace/${result.workspaceId}`);
+  const timezone = String(formData.get("timezone") ?? "").trim() || undefined;
+  const result = await createWorkspaceFromTemplate(templateId, name, timezone);
+  if (result.error) {
+    // If there's an error, redirect back to choose-template instead of staying on builder
+    redirect("/choose-template");
+    return;
+  }
+  if (result.workspaceId) {
+    redirect(`/workspace/${result.workspaceId}`);
+    return;
+  }
+  // Fallback: redirect to choose-template if no workspaceId
+  redirect("/choose-template");
 }
 
 export async function deleteWorkspaceFormAction(formData: FormData) {
