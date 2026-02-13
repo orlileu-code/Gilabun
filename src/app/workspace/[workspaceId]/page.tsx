@@ -8,7 +8,7 @@ import { TopBar } from "../../components/TopBar";
 import {
   getNextSeatingForWorkspace,
   forceSeatWorkspaceAction,
-  kitchenSlowAllWorkspaceAction
+  kitchenSlowAllWorkspaceFormAction
 } from "../../actions";
 import { WorkspaceServiceView } from "../../components/WorkspaceServiceView";
 
@@ -75,7 +75,7 @@ export default async function WorkspaceDashboardPage({
       <div className="mb-2 flex shrink-0 items-center justify-between px-4">
         <h1 className="text-lg font-semibold text-[var(--text)]">{workspace.name}</h1>
         <Link href="/app" className="btn-ghost text-sm">
-          ← Dashboard
+          ← Back
         </Link>
       </div>
 
@@ -126,10 +126,8 @@ export default async function WorkspaceDashboardPage({
           </div>
         </div>
         <div className="mt-2 flex justify-end">
-          <form action={async () => {
-            "use server";
-            await kitchenSlowAllWorkspaceAction(workspaceId);
-          }}>
+          <form action={kitchenSlowAllWorkspaceFormAction}>
+            <input type="hidden" name="workspaceId" value={workspaceId} />
             <button
               type="submit"
               className="btn-ghost meta-text text-[var(--muted)] hover:text-[var(--table-occupied-text)]"
@@ -153,6 +151,7 @@ export default async function WorkspaceDashboardPage({
           newestPartyId={newestPartyId}
           restaurantName={workspace.templateName}
           logoUrl={workspace.templateLogoUrl}
+          timezone={workspace.timezone}
           nowMsSnapshot={Date.now()}
         />
       </div>

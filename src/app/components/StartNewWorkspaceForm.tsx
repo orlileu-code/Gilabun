@@ -23,12 +23,15 @@ export function StartNewWorkspaceForm({ templates }: { templates: Template[] }) 
     const formData = new FormData(form);
     const templateId = String(formData.get("templateId") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim() || undefined;
+    const timezone = typeof Intl !== "undefined"
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
     if (!templateId) {
       setError("Choose a template.");
       setPending(false);
       return;
     }
-    const result = await createWorkspaceFromTemplate(templateId, name);
+    const result = await createWorkspaceFromTemplate(templateId, name, timezone);
     if (result.error) {
       setError(result.error);
       setPending(false);

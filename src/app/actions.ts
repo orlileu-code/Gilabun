@@ -927,3 +927,10 @@ export async function kitchenSlowAllWorkspaceAction(workspaceId: string) {
   revalidatePath("/");
   revalidatePath(`/workspace/${workspaceId}`);
 }
+
+/** Form action for "Kitchen running slow" – reads workspaceId from formData. */
+export async function kitchenSlowAllWorkspaceFormAction(formData: FormData) {
+  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
+  if (!workspaceId) return;
+  await kitchenSlowAllWorkspaceAction(workspaceId);
+}

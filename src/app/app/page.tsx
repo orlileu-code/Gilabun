@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TopBar } from "../components/TopBar";
+import { ClientDate } from "@/components/ClientDate";
 import {
   listWorkspaces,
   duplicateWorkspaceFormAction,
@@ -92,11 +93,11 @@ export default async function AppHomePage() {
                     <span className="party-name text-[var(--text)]">{w.name}</span>
                     <span className="ml-2 meta-text text-[var(--muted)]">
                       {w.templateName} ·{" "}
-                      {w.createdAt.toLocaleDateString()}{" "}
-                      {w.createdAt.toLocaleTimeString(undefined, {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })}
+                      <ClientDate
+                        value={w.createdAt.toISOString()}
+                        variant="datetime"
+                        timezone={w.timezone ?? undefined}
+                      />
                     </span>
                   </div>
                   <div className="flex gap-2">

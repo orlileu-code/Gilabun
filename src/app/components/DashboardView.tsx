@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ClientDate } from "@/components/ClientDate";
 import {
   LineChart,
   Line,
@@ -221,11 +222,15 @@ export function DashboardView({ stats, currentRange }: DashboardViewProps) {
                       className="border-b border-[var(--border)] hover:bg-[var(--panel-2)]"
                     >
                       <td className="px-4 py-2 text-sm text-[var(--text)]">
-                        {ws.createdAt.toLocaleDateString()}{" "}
-                        {ws.createdAt.toLocaleTimeString(undefined, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        <ClientDate
+                          value={
+                            typeof ws.createdAt === "string"
+                              ? ws.createdAt
+                              : ws.createdAt.toISOString()
+                          }
+                          variant="datetime"
+                          timezone={ws.timezone ?? undefined}
+                        />
                       </td>
                       <td className="px-4 py-2 text-sm text-[var(--text)]">
                         <Link

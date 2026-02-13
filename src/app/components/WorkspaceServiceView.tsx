@@ -22,6 +22,7 @@ import { PartyStatus } from "@/lib/enums";
 import { TimeTickProvider } from "../contexts/TimeTickContext";
 import { getEstimatedMealDurationMin } from "@/lib/waitEstimate";
 import { Panel, Header, Badge } from "@/ui";
+import { formatTime, formatDateTime } from "@/lib/dateFormat";
 
 export type TableState = {
   id: string;
@@ -108,22 +109,16 @@ function MenuDotsIcon({ className }: { className?: string }) {
   );
 }
 
-function formatPartyTime(createdAt: Date | string | undefined): string {
-  if (!createdAt) return "";
-  const d = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
-  if (!Number.isFinite(d.getTime())) return "";
-  return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false });
+function formatPartyTime(createdAt: Date | string | undefined, timezone?: string | null): string {
+  return formatTime(createdAt ?? "", timezone ?? undefined);
 }
 
 /** Renders time + date only after mount to avoid server/client format mismatch (hydration error). */
-function WorkspaceHeaderTime() {
+function WorkspaceHeaderTime({ timezone }: { timezone?: string | null }) {
   const [str, setStr] = useState<string>("");
   useEffect(() => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const dateStr = now.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-    setStr(`${timeStr} ${dateStr}`);
-  }, []);
+    setStr(formatDateTime(new Date(), timezone ?? undefined));
+  }, [timezone]);
   return <>{str || "\u00A0"}</>;
 }
 
@@ -133,6 +128,7 @@ const WaitlistRow = memo(function WaitlistRow({
   isNewest,
   isDragging,
   workspaceId,
+  timezone,
   onDragStart,
   onDragEnd,
   onClick
@@ -142,11 +138,12 @@ const WaitlistRow = memo(function WaitlistRow({
   isNewest: boolean;
   isDragging: boolean;
   workspaceId: string;
+  timezone?: string | null;
   onDragStart: (e: React.DragEvent, party: WaitingParty) => void;
   onDragEnd: () => void;
   onClick?: () => void;
 }) {
-  const timeStr = formatPartyTime(party.createdAt);
+  const timeStr = formatPartyTime(party.createdAt, timezone);
   return (
     <div
       draggable
@@ -228,6 +225,8 @@ type WorkspaceServiceViewProps = {
   newestPartyId: string | null;
   restaurantName?: string;
   logoUrl?: string | null;
+  /** Workspace timezone for date display (e.g. "America/New_York"). */
+  timezone?: string | null;
   /** Snapshot of current time in ms from server; keeps SSR/CSR in sync to avoid hydration mismatches. */
   nowMsSnapshot: number;
 };
@@ -261,6 +260,7 @@ export function WorkspaceServiceView({
   newestPartyId,
   restaurantName = "Gilabun",
   logoUrl = null,
+  timezone = null,
   nowMsSnapshot
 }: WorkspaceServiceViewProps) {
   const router = useRouter();
@@ -694,7 +694,7 @@ export function WorkspaceServiceView({
                 <Header variant="waitlist" as="h1">{restaurantName}</Header>
               </div>
               <p className="mt-0.5 meta-text text-[var(--waitlist-muted)] tabular-nums">
-                <WorkspaceHeaderTime />
+                <WorkspaceHeaderTime timezone={timezone} />
               </p>
             </div>
             <div className="shrink-0 flex flex-row items-center justify-between gap-2 border-b border-[var(--waitlist-border)] px-2.5 py-1.5">
@@ -731,6 +731,7 @@ export function WorkspaceServiceView({
                       isNewest={party.id === derivedNewestPartyId && derivedFirstPartyId !== derivedNewestPartyId}
                       isDragging={draggingParty?.id === party.id}
                       workspaceId={workspaceId}
+                      timezone={timezone}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       onClick={() => {
@@ -848,7 +849,7 @@ export function WorkspaceServiceView({
                 )}
                 {selectedParty.createdAt && (
                   <p className="mt-1 text-xs text-[var(--muted)]">
-                    Added: {formatPartyTime(selectedParty.createdAt)}
+                    Added: {formatDateTime(selectedParty.createdAt, timezone ?? undefined)}
                   </p>
                 )}
               </div>

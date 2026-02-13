@@ -25,6 +25,7 @@ export type WorkspaceWithMeta = {
   templateName: string;
   createdAt: Date;
   isActive: boolean;
+  timezone?: string | null;
 };
 
 export async function listWorkspaces(userId: string): Promise<WorkspaceWithMeta[]> {
@@ -38,6 +39,7 @@ export async function listWorkspaces(userId: string): Promise<WorkspaceWithMeta[
       name: string;
       templateId: string;
       templateName?: string;
+      timezone?: string | null;
       createdAt: { seconds: number; nanoseconds: number };
       isActive?: boolean;
     };
@@ -47,7 +49,8 @@ export async function listWorkspaces(userId: string): Promise<WorkspaceWithMeta[
       templateId: d.templateId,
       templateName: d.templateName ?? "",
       createdAt: timestampToDate(d.createdAt) ?? new Date(0),
-      isActive: !!d.isActive
+      isActive: !!d.isActive,
+      timezone: d.timezone ?? null
     });
   }
   return list;
@@ -55,7 +58,8 @@ export async function listWorkspaces(userId: string): Promise<WorkspaceWithMeta[
 
 export async function createWorkspaceFromTemplate(
   templateId: string,
-  name?: string
+  name?: string,
+  timezone?: string
 ): Promise<{ workspaceId?: string; error?: string }> {
   const userId = await getUserId();
   if (!userId) {
@@ -86,6 +90,7 @@ export async function createWorkspaceFromTemplate(
     templateId,
     templateName: templateData.name,
     templateLogoUrl: templateData.logoUrl ?? null,
+    timezone: timezone ?? null,
     createdAt: now,
     updatedAt: now,
     status: "ACTIVE",
@@ -167,6 +172,7 @@ export async function duplicateWorkspace(workspaceId: string): Promise<{
     name: string;
     templateId: string;
     templateName?: string;
+    timezone?: string | null;
   };
   const tableStatesSnap = await tableStatesCol(userId, workspaceId).get();
 
@@ -176,6 +182,7 @@ export async function duplicateWorkspace(workspaceId: string): Promise<{
     name: newName,
     templateId: wData.templateId,
     templateName: wData.templateName ?? "",
+    timezone: wData.timezone ?? null,
     createdAt: now,
     updatedAt: now,
     status: "ACTIVE",
@@ -278,6 +285,7 @@ export async function getWorkspaceWithData(
   }>;
   templateName: string;
   templateLogoUrl: string | null;
+  timezone: string | null;
   parties: Array<{
     id: string;
     name: string;
@@ -296,6 +304,7 @@ export async function getWorkspaceWithData(
     templateId: string;
     templateName?: string;
     templateLogoUrl?: string | null;
+    timezone?: string | null;
   };
 
   const templateSnap = await templateDoc(userId, wData.templateId).get();
@@ -438,6 +447,7 @@ export async function getWorkspaceWithData(
     labels,
     templateName: wData.templateName ?? templateData?.name ?? "",
     templateLogoUrl: wData.templateLogoUrl ?? templateData?.logoUrl ?? null,
+    timezone: wData.timezone ?? null,
     parties
   };
 }

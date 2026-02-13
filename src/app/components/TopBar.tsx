@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Panel, Header, Badge } from "@/ui";
+import { formatDateTime } from "@/lib/dateFormat";
 
 /** Renders time + date only after mount to avoid server/client format mismatch (hydration error). */
 function TopBarTime() {
   const [str, setStr] = useState<string>("");
   useEffect(() => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const dateStr = now.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-    setStr(`${timeStr} ${dateStr}`);
+    setStr(formatDateTime(new Date()));
   }, []);
   return <span className="meta-text font-mono text-[var(--muted)]">{str || "\u00A0"}</span>;
 }
@@ -43,12 +42,18 @@ export function TopBar({ waitingCount }: TopBarProps) {
         <Header variant="page" as="h1" className="tracking-tight">
           TableFlow
         </Header>
-        <a
+        <Link
+          href="/"
+          className="btn-ghost text-sm"
+        >
+          Home
+        </Link>
+        <Link
           href="/app/dashboard"
           className="btn-ghost text-sm"
         >
           Dashboard
-        </a>
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}

@@ -41,6 +41,11 @@ export default async function BuilderPage({ params }: Props) {
   return (
     <>
       <TopBar />
+      <div className="mb-2 flex shrink-0 items-center justify-between px-4">
+        <Link href="/choose-template" className="btn-ghost text-sm">
+          ← Back to templates
+        </Link>
+      </div>
       <main className="flex flex-1 flex-col gap-4 lg:flex-row">
         <BuilderView
           templateId={template.id}
@@ -51,11 +56,6 @@ export default async function BuilderPage({ params }: Props) {
           setActiveTemplateFormAction={setActiveTemplateFormAction}
         />
       </main>
-      <div className="mt-4 flex gap-2">
-        <Link href="/choose-template" className="btn-ghost text-sm">
-          ← Back to templates
-        </Link>
-      </div>
     </>
   );
 }

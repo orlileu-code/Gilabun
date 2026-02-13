@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getUserId } from "@/lib/firebase/auth-server";
 import { getTemplates, setActiveTemplateFormAction } from "../templateActions";
 import { TopBar } from "../components/TopBar";
+import { ClientDate } from "@/components/ClientDate";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ export default async function ChooseTemplatePage() {
                 </div>
                 <p className="mt-1 text-xs text-[var(--muted)]">
                   {t.tableCount} tables · updated{" "}
-                  {t.updatedAt.toLocaleDateString()}
+                  <ClientDate value={t.updatedAt.toISOString()} variant="date" />
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <form action={setActiveTemplateFormAction} className="contents">

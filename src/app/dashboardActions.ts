@@ -13,6 +13,7 @@ export type WorkspaceStats = {
   workspaceId: string;
   name: string;
   createdAt: Date;
+  timezone?: string | null;
   avgWaitMin: number | null;
   minWaitMin: number | null;
   maxWaitMin: number | null;
@@ -95,6 +96,7 @@ async function getWorkspaceStats(
 
   const workspaceData = workspaceSnap.data() as {
     name: string;
+    timezone?: string | null;
     createdAt: { seconds: number; nanoseconds: number };
   };
   const createdAt = timestampToDate(workspaceData.createdAt) ?? new Date(0);
@@ -185,6 +187,7 @@ async function getWorkspaceStats(
     workspaceId,
     name: workspaceData.name,
     createdAt,
+    timezone: workspaceData.timezone ?? null,
     avgWaitMin,
     minWaitMin,
     maxWaitMin,
