@@ -15,8 +15,11 @@ import { ClientDate } from "@/components/ClientDate";
 
 export const dynamic = "force-dynamic";
 
+/** Detect auto-generated workspace names (12h or 24h timestamp format) that may have wrong timezone. */
 function isLegacyTimestampName(name: string): boolean {
-  return name.includes(" AM") || name.includes(" PM");
+  if (name.includes(" AM") || name.includes(" PM")) return true; // old 12h format
+  // formatDateTime-style: "Thu 12 Feb 04:43" or "Thu 12 Feb, 04:43"
+  return /^[A-Za-z]{3} \d{1,2} [A-Za-z]{3},? \d{1,2}:\d{2}$/.test(name.trim());
 }
 
 function minutesSinceCreated(createdAt: Date): number {
