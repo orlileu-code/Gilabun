@@ -17,6 +17,7 @@ import {
   partiesCol,
   timestampToDate
 } from "@/lib/firebase/db";
+import { formatDateTime } from "@/lib/dateFormat";
 
 export type WorkspaceWithMeta = {
   id: string;
@@ -76,13 +77,15 @@ export async function createWorkspaceFromTemplate(
 
   const workspaceName =
     name?.trim() ||
-    new Date().toLocaleString(undefined, {
-      weekday: "short",
-      day: "numeric",
-      month: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    (timezone
+      ? formatDateTime(new Date(), timezone)
+      : new Date().toLocaleString(undefined, {
+          weekday: "short",
+          day: "numeric",
+          month: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }));
 
   const now = new Date();
   const workspaceRef = await workspacesCol(userId).add({
