@@ -74,13 +74,13 @@ export default async function WorkspaceDashboardPage({
     <div className="flex min-h-screen flex-col overflow-x-hidden">
       <TopBar waitingCount={allWaitingCount} />
       <div className="mb-2 flex shrink-0 items-center justify-between px-4">
-        <div className="relative h-8 w-auto min-w-[80px]">
+        <div className="relative h-14 w-auto min-w-[140px]">
           <Image
             src="/igani-logo.png"
             alt="Igani"
-            width={120}
-            height={32}
-            className="object-contain object-left h-8 w-auto"
+            width={180}
+            height={56}
+            className="object-contain object-left h-14 w-auto"
             priority
           />
         </div>
