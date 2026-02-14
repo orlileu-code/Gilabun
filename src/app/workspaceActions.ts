@@ -267,6 +267,7 @@ export async function getWorkspaceWithData(
 ): Promise<{
   id: string;
   name: string;
+  createdAt: Date;
   templateId: string;
   layout: Array<{
     tableNumber: number;
@@ -330,6 +331,7 @@ export async function getWorkspaceWithData(
     templateName?: string;
     templateLogoUrl?: string | null;
     timezone?: string | null;
+    createdAt?: { seconds: number; nanoseconds: number };
   };
 
   const templateSnap = await templateDoc(userId, wData.templateId).get();
@@ -465,6 +467,7 @@ export async function getWorkspaceWithData(
   return {
     id: workspaceSnap.id,
     name: wData.name,
+    createdAt: timestampToDate(wData.createdAt) ?? new Date(0),
     templateId: wData.templateId,
     layout,
     tableStates,

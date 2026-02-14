@@ -11,8 +11,13 @@ import {
   kitchenSlowAllWorkspaceFormAction
 } from "../../actions";
 import { WorkspaceServiceView } from "../../components/WorkspaceServiceView";
+import { ClientDate } from "@/components/ClientDate";
 
 export const dynamic = "force-dynamic";
+
+function isLegacyTimestampName(name: string): boolean {
+  return name.includes(" AM") || name.includes(" PM");
+}
 
 function minutesSinceCreated(createdAt: Date): number {
   return Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
@@ -73,7 +78,17 @@ export default async function WorkspaceDashboardPage({
     <div className="flex min-h-screen flex-col overflow-x-hidden">
       <TopBar waitingCount={allWaitingCount} />
       <div className="mb-2 flex shrink-0 items-center justify-between px-4">
-        <h1 className="text-lg font-semibold text-[var(--text)]">{workspace.name}</h1>
+        <h1 className="text-lg font-semibold text-[var(--text)]">
+          {isLegacyTimestampName(workspace.name) ? (
+            <ClientDate
+              value={workspace.createdAt.toISOString()}
+              variant="datetime"
+              timezone={workspace.timezone ?? undefined}
+            />
+          ) : (
+            workspace.name
+          )}
+        </h1>
         <Link href="/app" className="btn-ghost text-sm">
           ← Back
         </Link>
