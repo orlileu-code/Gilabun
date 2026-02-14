@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminApp } from "@/lib/firebase/admin";
 
 const SESSION_COOKIE_NAME = "session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 5; // 5 days
+const SESSION_MAX_AGE = 60 * 60 * 24 * 14; // 14 days (Firebase max) — stay signed in until logout
 
 /**
  * Map Firebase error codes to user-friendly error messages and suggestions.
@@ -191,8 +191,10 @@ export async function POST(request: NextRequest) {
     });
 
     const res = NextResponse.json({ status: "success" });
+    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000);
     res.cookies.set(SESSION_COOKIE_NAME, sessionCookie, {
       maxAge: SESSION_MAX_AGE,
+      expires: expiresAt,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -217,7 +219,11 @@ export async function DELETE() {
   const res = NextResponse.json({ status: "success" });
   res.cookies.set(SESSION_COOKIE_NAME, "", {
     maxAge: 0,
-    path: "/"
+    expires: new Date(0),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
   });
   return res;
 }
