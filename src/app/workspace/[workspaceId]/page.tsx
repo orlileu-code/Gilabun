@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getUserId } from "@/lib/firebase/auth-server";
 import { getWorkspaceWithData } from "../../workspaceActions";
 import { getEarliestAvailableTimeForWorkspaceTables } from "@/lib/waitEstimate";
@@ -11,16 +12,8 @@ import {
   kitchenSlowAllWorkspaceFormAction
 } from "../../actions";
 import { WorkspaceServiceView } from "../../components/WorkspaceServiceView";
-import { ClientDate } from "@/components/ClientDate";
 
 export const dynamic = "force-dynamic";
-
-/** Detect auto-generated workspace names (12h or 24h timestamp format) that may have wrong timezone. */
-function isLegacyTimestampName(name: string): boolean {
-  if (name.includes(" AM") || name.includes(" PM")) return true; // old 12h format
-  // formatDateTime-style: "Thu 12 Feb 04:43" or "Thu 12 Feb, 04:43"
-  return /^[A-Za-z]{3} \d{1,2} [A-Za-z]{3},? \d{1,2}:\d{2}$/.test(name.trim());
-}
 
 function minutesSinceCreated(createdAt: Date): number {
   return Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60000));
@@ -81,17 +74,16 @@ export default async function WorkspaceDashboardPage({
     <div className="flex min-h-screen flex-col overflow-x-hidden">
       <TopBar waitingCount={allWaitingCount} />
       <div className="mb-2 flex shrink-0 items-center justify-between px-4">
-        <h1 className="text-lg font-semibold text-[var(--text)]">
-          {isLegacyTimestampName(workspace.name) ? (
-            <ClientDate
-              value={workspace.createdAt.toISOString()}
-              variant="datetime"
-              timezone={workspace.timezone ?? undefined}
-            />
-          ) : (
-            workspace.name
-          )}
-        </h1>
+        <div className="relative h-8 w-auto min-w-[80px]">
+          <Image
+            src="/igani-logo.png"
+            alt="Igani"
+            width={120}
+            height={32}
+            className="object-contain object-left h-8 w-auto"
+            priority
+          />
+        </div>
         <Link href="/app" className="btn-ghost text-sm">
           ← Back
         </Link>
