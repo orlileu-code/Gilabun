@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { Menu, X } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "./Button"
 
 const navItems = [
@@ -30,10 +31,16 @@ export function Navbar() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brown-700 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">TF</span>
+          <div className="relative h-10 w-auto min-w-[100px] sm:h-12 sm:min-w-[120px]">
+            <Image
+              src="/igani-logo.png"
+              alt="Igani"
+              width={150}
+              height={48}
+              className="object-contain object-left h-10 w-auto sm:h-12"
+              priority
+            />
           </div>
-          <span className="font-semibold text-brown-900 hidden sm:block">TableFlow</span>
         </Link>
 
         {/* Desktop Nav Items */}

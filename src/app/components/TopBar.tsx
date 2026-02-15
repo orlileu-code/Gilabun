@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Panel, Header, Badge } from "@/ui";
+import Image from "next/image";
+import { Panel, Badge } from "@/ui";
 import { formatDateTime } from "@/lib/dateFormat";
 
 /** Renders time + date only after mount to avoid server/client format mismatch (hydration error). */
@@ -39,9 +40,16 @@ export function TopBar({ waitingCount }: TopBarProps) {
         )}
       </div>
       <div className="flex items-center gap-3">
-        <Header variant="page" as="h1" className="tracking-tight">
-          TableFlow
-        </Header>
+        <Link href="/app" className="relative flex h-10 w-auto min-w-[100px] sm:h-12 sm:min-w-[120px]">
+          <Image
+            src="/igani-logo.png"
+            alt="Igani"
+            width={150}
+            height={48}
+            className="object-contain object-left h-10 w-auto sm:h-12"
+            priority
+          />
+        </Link>
         <Link
           href="/"
           className="btn-ghost text-sm"
